@@ -1,0 +1,372 @@
+/* Admin Panel Styles */
+.admin-panel {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #f5f5f5;
+    min-height: 100vh;
+  }
+  
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .admin-welcome {
+    color: #666;
+    font-size: 14px;
+  }
+  
+  .refresh-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .refresh-btn:hover {
+    background: #0056b3;
+  }
+  
+  .admin-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .admin-tabs button {
+    padding: 10px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s;
+  }
+  
+  .admin-tabs button.active {
+    background: #000;
+    color: white;
+  }
+  
+  .admin-tabs button:hover:not(.active) {
+    background: #eee;
+  }
+  
+  .tab-content {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  
+  .stat-card {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+    border-left: 4px solid #007bff;
+  }
+  
+  .stat-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #666;
+    text-transform: uppercase;
+  }
+  
+  .stat-card p {
+    margin: 0;
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .stat-card small {
+    color: #999;
+    font-size: 12px;
+  }
+  
+  .users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+  }
+  
+  .user-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-left: 4px solid #28a745;
+  }
+  
+  .user-info h4 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .user-info p {
+    margin: 5px 0;
+    font-size: 13px;
+    color: #666;
+  }
+  
+  .role, .status {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  
+  .role.admin, .role.super-admin {
+    background: #007bff;
+    color: white;
+  }
+  
+  .role.user {
+    background: #6c757d;
+    color: white;
+  }
+  
+  .status.pending {
+    background: #fff3cd;
+    color: #856404;
+  }
+  
+  .status.active {
+    background: #d4edda;
+    color: #155724;
+  }
+  
+  .status.suspended {
+    background: #f8d7da;
+    color: #721c24;
+  }
+  
+  .user-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .user-actions button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s;
+  }
+  
+  .btn-approve {
+    background: #28a745;
+    color: white;
+  }
+  
+  .btn-suspend {
+    background: #dc3545;
+    color: white;
+  }
+  
+  .btn-activate {
+    background: #17a2b8;
+    color: white;
+  }
+  
+  .loading {
+    text-align: center;
+    padding: 50px;
+    font-size: 18px;
+    color: #666;
+  }
+  
+  .no-data {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .user-filters {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .user-filters button {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  
+  .user-filters button:hover {
+    background: #f5f5f5;
+  }
+  /* Company Management Styles */
+.btn-add-company {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .btn-add-company:hover {
+    background: #218838;
+  }
+  
+  .add-company-form {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #e9ecef;
+  }
+  
+  .add-company-form h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .form-group small {
+    color: #666;
+    font-size: 12px;
+  }
+  
+  .form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  .btn-primary {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .btn-primary:hover {
+    background: #0056b3;
+  }
+  
+  .btn-cancel {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .btn-cancel:hover {
+    background: #545b62;
+  }
+  
+  .company-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .company-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  
+  .company-status.active {
+    background: #d4edda;
+    color: #155724;
+  }
+  
+  .company-status.inactive {
+    background: #f8d7da;
+    color: #721c24;
+  }
+  
+  .company-info {
+    margin-bottom: 15px;
+  }
+  
+  .company-info p {
+    margin: 5px 0;
+    font-size: 14px;
+  }
+  
+  .company-card.inactive {
+    opacity: 0.7;
+    background: #f8f9fa;
+  }
+  
+  .btn-delete {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  
+  .btn-delete:hover {
+    background: #c82333;
+  }
