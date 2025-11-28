@@ -18,7 +18,7 @@
   
   /* Top Bar */
   .pp-topbar {
-    height: 72px;
+    height: 100px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -29,7 +29,7 @@
   
   .pp-left {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 16px;
   }
   
@@ -49,6 +49,7 @@
   }
   
   .pp-status {
+    text-align: left;
     color: #12b54b;
     font-size: 13px;
   }
@@ -87,6 +88,10 @@
   
   .pp-logo {
     width: 220px;
+    height: auto;
+  }
+  .pp-head-logo {
+    width: 50px;
     height: auto;
   }
   

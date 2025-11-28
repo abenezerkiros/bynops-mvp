@@ -22,6 +22,8 @@ const LeftPanel = ({ title = "Left Panel", backgroundColor = "#2d3748", children
     <div className="chat-root">
       <header className="pp-topbar">
         <div className="pp-left">
+        <img src={logo} alt="logo" className="pp-head-logo" />
+          <div>
           <div className="pp-plan">Standard plan</div>
           <div 
             className="pp-status" 
@@ -29,6 +31,8 @@ const LeftPanel = ({ title = "Left Panel", backgroundColor = "#2d3748", children
           >
             • {status}
           </div>
+          </div>
+         
         </div>
 
         <div className="pp-right">
