@@ -1,104 +1,164 @@
-import React from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import './ResizableSplitPanel.css';
+import RightPanel from "./sidebar.jsx"
+import LeftPanel from "./Chat.jsx"
 import { useAuth } from '../context/AuthContext';
-import './dashboard.css';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase/config';
 
-export default function Dashboard() {
-  const { currentUser, userData } = useAuth();
+const ResizableSplitPanel = ({ left, right }) => {
+  const [leftWidth, setLeftWidth] = useState(33.33);
+  const [isResizing, setIsResizing] = useState(false);
+  const containerRef = useRef(null);
+
+  const MIN_WIDTH = 33.33;
+  const MAX_WIDTH = 80;
+
+  const startResizing = useCallback(() => {
+    setIsResizing(true);
+  }, []);
+
+  const stopResizing = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  const resize = useCallback((mouseMoveEvent) => {
+    if (isResizing && containerRef.current) {
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const containerWidth = containerRect.width;
+      const mouseX = mouseMoveEvent.clientX - containerRect.left;
+      const newWidth = (mouseX / containerWidth) * 100;
+
+      if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) {
+        setLeftWidth(newWidth);
+      } else if (newWidth < MIN_WIDTH) {
+        setLeftWidth(MIN_WIDTH);
+      } else if (newWidth > MAX_WIDTH) {
+        setLeftWidth(MAX_WIDTH);
+      }
+    }
+  }, [isResizing]);
+
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', resize);
+      document.addEventListener('mouseup', stopResizing);
+
+      return () => {
+        document.removeEventListener('mousemove', resize);
+        document.removeEventListener('mouseup', stopResizing);
+      };
+    }
+  }, [isResizing, resize, stopResizing]);
 
   return (
-    <div className="dashboard">
-      <div className="dashboard-header">
-        <h1>Welcome to BYNOPS Dashboard</h1>
-        <p>Turning Knowledge Into Structured Understanding</p>
+    <div ref={containerRef} className="split-panel-container">
+      <div 
+        className="left-panel"
+        style={{ width: `${leftWidth}%` }}
+      >
+        {left}
       </div>
       
-      <div className="dashboard-content">
-        <div className="user-welcome">
-          <h2>Hello, {userData?.fullName || 'User'}!</h2>
-          <div className="user-info-card">
-            <div className="info-item">
-              <strong>Email:</strong> {userData?.email}
-            </div>
-            <div className="info-item">
-              <strong>Company:</strong> {userData?.companyName}
-            </div>
-            <div className="info-item">
-              <strong>Role:</strong> <span className={`role-badge ${userData?.role}`}>{userData?.role}</span>
-            </div>
-            <div className="info-item">
-              <strong>Status:</strong> <span className={`status-badge ${userData?.status}`}>{userData?.status}</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="dashboard-features">
-          <div className="feature-card">
-            <div className="feature-icon">📊</div>
-            <h3>Data Analytics</h3>
-            <p>Access comprehensive data insights and analytics tools to make informed decisions.</p>
-          </div>
-          
-          <div className="feature-card">
-            <div className="feature-icon">📈</div>
-            <h3>Reports</h3>
-            <p>Generate and view detailed reports and summaries of your data and performance.</p>
-          </div>
-          
-          <div className="feature-card">
-            <div className="feature-icon">⚙️</div>
-            <h3>Settings</h3>
-            <p>Manage your account preferences, security settings, and notification preferences.</p>
-          </div>
-          
-          <div className="feature-card">
-            <div className="feature-icon">👥</div>
-            <h3>Team Collaboration</h3>
-            <p>Collaborate with your team members and share insights across your organization.</p>
-          </div>
-          
-          <div className="feature-card">
-            <div className="feature-icon">🔒</div>
-            <h3>Security</h3>
-            <p>Manage your security settings, two-factor authentication, and access controls.</p>
-          </div>
-          
-          <div className="feature-card">
-            <div className="feature-icon">📚</div>
-            <h3>Knowledge Base</h3>
-            <p>Access documentation, tutorials, and resources to help you get the most from BYNOPS.</p>
-          </div>
-        </div>
-
-        <div className="quick-stats">
-          <h3>Quick Overview</h3>
-          <div className="stats-grid">
-            <div className="stat-item">
-              <div className="stat-number">0</div>
-              <div className="stat-label">Projects</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-number">0</div>
-              <div className="stat-label">Reports</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-number">0</div>
-              <div className="stat-label">Team Members</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-number">0</div>
-              <div className="stat-label">Active Tasks</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="recent-activity">
-          <h3>Recent Activity</h3>
-          <div className="activity-placeholder">
-            <p>No recent activity to display</p>
-            <small>Your recent actions and updates will appear here</small>
-          </div>
-        </div>
+      <div 
+        className="divider"
+        onMouseDown={startResizing}
+      />
+      
+      <div 
+        className="right-panel"
+        style={{ width: `${100 - leftWidth}%` }}
+      >
+        {right}
       </div>
     </div>
   );
-}
+};
+
+// Main Dashboard Component with Firebase integration
+const ExampleApp = () => {
+  const { currentUser } = useAuth();
+  const [propertyStatus, setPropertyStatus] = useState("Performing");
+  const [loading, setLoading] = useState(false);
+
+  // Load property data from Firebase
+  useEffect(() => {
+    const loadPropertyData = async () => {
+      if (!currentUser) return;
+
+      try {
+        setLoading(true);
+        const propertyDocRef = doc(db, 'properties', currentUser.uid);
+        const propertyDoc = await getDoc(propertyDocRef);
+        
+        if (propertyDoc.exists()) {
+          const data = propertyDoc.data();
+          if (data.status) {
+            setPropertyStatus(data.status);
+          }
+        } else {
+          // Create initial property document
+          await setDoc(propertyDocRef, {
+            status: 'Performing',
+            lastUpdated: new Date(),
+            userId: currentUser.uid,
+            userEmail: currentUser.email,
+            createdAt: new Date()
+          });
+        }
+      } catch (error) {
+        console.error('Error loading property data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPropertyData();
+  }, [currentUser]);
+
+  // Handle status change and save to Firebase
+  const handleStatusChange = async (newStatus) => {
+    if (!currentUser) return;
+
+    try {
+      setLoading(true);
+      console.log('Updating status to:', newStatus);
+      
+      const propertyDocRef = doc(db, 'properties', currentUser.uid);
+      
+      await updateDoc(propertyDocRef, {
+        status: newStatus,
+        lastUpdated: new Date()
+      });
+
+      setPropertyStatus(newStatus);
+      console.log('Status updated successfully in Firebase');
+      
+    } catch (error) {
+      console.error('Error updating status in Firebase:', error);
+      alert('Error updating status: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ height: '100vh', width: '100vw' }}>
+      <ResizableSplitPanel
+        left={
+          <RightPanel 
+            status={propertyStatus}
+            onStatusChange={handleStatusChange}
+            loading={loading}
+          />
+        }
+        right={
+          <LeftPanel status={propertyStatus} />
+        }
+      />
+    </div>
+  );
+};
+
+export default ExampleApp;
+export { ExampleApp };
