@@ -17,7 +17,16 @@ const LeftPanel = ({ title = "Left Panel", backgroundColor = "#2d3748", children
     Defeased: "#0fa3e6",
     "Paid Off": "#777"
   };
-
+// Helper function to get user initials
+    const getUserInitials = (fullName) => {
+      if (!fullName) return 'U';
+  
+      return fullName
+        .split(' ')
+        .map(name => name.charAt(0).toUpperCase())
+        .join('')
+       .slice(0, 2); // Get max 2 initials
+      };
   return (
     <div className="chat-root">
       <header className="pp-topbar">
@@ -36,9 +45,12 @@ const LeftPanel = ({ title = "Left Panel", backgroundColor = "#2d3748", children
         </div>
 
         <div className="pp-right">
-          <div className="pp-user">
-            <span>{userData?.fullName || 'User'}</span>
+        <div className="pp-user">
+          <div className="gg-icon">
+            {getUserInitials(userData?.fullName)}
           </div>
+        <span>{userData?.fullName || 'User'}</span>
+        </div>
         </div>
       </header>
 
