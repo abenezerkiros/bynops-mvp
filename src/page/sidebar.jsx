@@ -629,12 +629,7 @@ const getFieldValue = (year, field, fallbackFields = []) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-1.205a6 6 0 01-7.743 5.197" />
             </svg>
             <p className="text-sm text-slate-500 mb-2">No tenant data for this loan</p>
-            <a 
-              href={`/loan-documents?loan=${encodeURIComponent(selectedLoanDetails?.loanNumber || '')}`}
-              className="text-xs text-blue-600 hover:text-blue-800 underline"
-            >
-              Upload tenant data →
-            </a>
+      
           </div>
         );
       }
@@ -1158,12 +1153,9 @@ const getFieldValue = (year, field, fallbackFields = []) => {
               <b>Notes:</b> Upload inspection data in the Documents section
             </div>
             <div className="upload-prompt">
-              <a 
-                href={`/loan-documents?loan=${encodeURIComponent(selectedLoanDetails?.loanNumber || '')}`}
-                className="upload-link"
-              >
-                Go to Documents to upload inspection data →
-              </a>
+          
+                Go to Documents to upload inspection data 
+          
             </div>
           </div>
         );
