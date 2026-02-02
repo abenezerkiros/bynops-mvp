@@ -1,0 +1,335 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import ChatPanel from "./chatMain";
+import Sidebar from "../page/sidenav";
+
+// Mock UI components - replace with your actual components
+const Card = ({ children, className }) => <div className={`card ${className}`}>{children}</div>;
+const CardHeader = ({ children }) => <div className="card-header">{children}</div>;
+const CardTitle = ({ children }) => <h3 className="card-title">{children}</h3>;
+const CardContent = ({ children }) => <div className="card-content">{children}</div>;
+const Button = ({ children, variant, size, className, onClick }) => (
+  <button 
+    className={`btn ${variant} ${size} ${className}`}
+    onClick={onClick}
+  >
+    {children}
+  </button>
+);
+
+export default function DashboardPage() {
+  // -----------------------------
+  // Data
+  // -----------------------------
+  const [loans, setLoans] = useState([]);
+  
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("bynops_loans");
+      if (raw) setLoans(JSON.parse(raw));
+    } catch (error) {
+      console.error("Error loading loans:", error);
+    }
+  }, []);
+
+  const kpis = useMemo(() => {
+    const total = loans.reduce(
+      (sum, l) => sum + (Number(l.principalBalance) || 0),
+      0
+    );
+    const performing = loans.filter((l) => l.status === "performing").length;
+    const watchlist = loans.filter((l) => l.status === "watchlist").length;
+    const def = loans.filter((l) => l.status === "default").length;
+    return { total, performing, watchlist, def };
+  }, [loans]);
+
+  const topLoans = useMemo(() => {
+    return [...loans]
+      .filter((l) => l.principalBalance != null)
+      .sort((a, b) => (b.principalBalance || 0) - (a.principalBalance || 0))
+      .slice(0, 5);
+  }, [loans]);
+
+  // Compact currency for tiles – avoids overflow (e.g., $561M)
+  const formatCompactUSD = (n) => {
+    if (n == null) return "";
+    const num = Number(n);
+    if (!Number.isFinite(num)) return String(n);
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      notation: "compact",
+      maximumFractionDigits: 0,
+    }).format(num);
+  };
+
+  const fmtUSD = (n) =>
+    n == null
+      ? "-"
+      : Number(n).toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD",
+          maximumFractionDigits: 0,
+        });
+
+  // -----------------------------
+  // Resizable chat (hydration-safe)
+  // -----------------------------
+  const [chatFrac, setChatFrac] = useState(0.33);
+  const [mounted, setMounted] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = parseFloat(localStorage.getItem("bynops_chat_frac") || "");
+      if (Number.isFinite(saved)) {
+        setChatFrac(Math.min(0.66, Math.max(0.33, saved)));
+      }
+    } catch (error) {
+      console.error("Error loading chat fraction:", error);
+    }
+    setMounted(true);
+
+    const check = () => setIsDesktop(window.innerWidth >= 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem("bynops_chat_frac", String(chatFrac));
+    }
+  }, [chatFrac, mounted]);
+
+  // Drag logic
+  const containerRef = useRef(null);
+  const draggingRef = useRef(false);
+
+  function beginDrag(e) {
+    e.preventDefault();
+    draggingRef.current = true;
+    window.addEventListener("mousemove", onDrag);
+    window.addEventListener("mouseup", endDrag);
+  }
+  
+  function onDrag(e) {
+    if (!draggingRef.current || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const leftFrac = x / rect.width;
+    const nextChatFrac = 1 - leftFrac;
+    const clamped = Math.min(0.66, Math.max(0.33, nextChatFrac));
+    setChatFrac(clamped);
+  }
+  
+  function endDrag() {
+    draggingRef.current = false;
+    window.removeEventListener("mousemove", onDrag);
+    window.removeEventListener("mouseup", endDrag);
+  }
+
+  // Derived widths
+  const chatPct = Math.round(chatFrac * 100);
+  const leftPct = 100 - chatPct;
+
+  const leftStyle = isDesktop && mounted ? { width: `${leftPct}%` } : { width: "100%" };
+  const rightStyle = isDesktop && mounted ? { width: `${chatPct}%` } : { width: "100%" };
+
+  // Navigation functions
+  const navigateToImport = () => {
+    console.log("Navigate to import page");
+    // Replace with your navigation logic
+    window.location.href = "/import";
+  };
+
+  const navigateToLoans = () => {
+    console.log("Navigate to loans page");
+    // Replace with your navigation logic
+    window.location.href = "/loan";
+  };
+
+  return (
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <Sidebar />
+      
+      {/* Main content area - adjusted for sidebar width */}
+      <div className="flex-1 ml-0 lg:ml-64 transition-all duration-300">
+        <div className="p-4 lg:p-8 w-full">
+          {/* Two-pane layout on lg+; stacked on mobile */}
+          <div
+            ref={containerRef}
+            className="relative flex flex-col lg:flex-row gap-4 lg:gap-6"
+            style={{ userSelect: draggingRef.current ? "none" : "auto" }}
+          >
+            {/* LEFT: dashboard content */}
+            <div className="space-y-6 lg:space-y-8 min-w-0 flex-1" style={leftStyle}>
+              {/* Header */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <h1 className="text-2xl lg:text-3xl font-semibold text-slate-900">
+                    Portfolio Overview
+                  </h1>
+                  <p className="text-slate-500 text-sm lg:text-base mt-1">
+                    A snapshot of your active CRE portfolio.
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                  <button
+                    onClick={navigateToImport}
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors w-full sm:w-auto"
+                  >
+                    + Import Data
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm("Reset all imported loan data?")) {
+                        localStorage.removeItem("bynops_loans");
+                        window.location.reload();
+                      }
+                    }}
+                    className="text-xs font-medium text-red-500 hover:text-red-600 hover:underline w-full sm:w-auto text-left sm:text-center"
+                  >
+                    Reset Data
+                  </button>
+                </div>
+              </div>
+
+              {/* KPI cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
+                <div className="rounded-xl border bg-white p-4 lg:p-6 shadow-sm">
+                  <div className="text-xs uppercase text-slate-400 font-medium mb-1">
+                    Total Balance
+                  </div>
+                  <div className="text-xl lg:text-2xl font-semibold">
+                    {formatCompactUSD(kpis.total)}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border bg-white p-4 lg:p-6 shadow-sm">
+                  <div className="text-xs uppercase text-slate-400 font-medium mb-1">
+                    Performing
+                  </div>
+                  <div className="text-xl lg:text-2xl font-semibold text-emerald-600">
+                    {kpis.performing}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border bg-white p-4 lg:p-6 shadow-sm">
+                  <div className="text-xs uppercase text-slate-400 font-medium mb-1">
+                    Watchlist / Default
+                  </div>
+                  <div className="text-xl lg:text-2xl font-semibold">
+                    <span className="text-amber-600">{kpis.watchlist}</span>
+                    <span className="mx-1 text-slate-400">/</span>
+                    <span className="text-red-600">{kpis.def}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Top 5 Largest Loans */}
+              <div className="rounded-xl border bg-white shadow-sm p-4 lg:p-6">
+                <h2 className="text-lg lg:text-xl font-semibold text-slate-900 mb-4">
+                  Top 5 Largest Loans
+                </h2>
+                {topLoans.length ? (
+                  <>
+                    <div className="space-y-3">
+                      {topLoans.map((l) => {
+                        const cityState = [l.city, l.state].filter(Boolean).join(", ");
+                        const rightOfPipe = l.propertyAddress || cityState || "—";
+                        return (
+                          <div
+                            key={l.id}
+                            className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 py-3 border-b last:border-b-0"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-slate-800 truncate text-sm lg:text-base">
+                                {(l.propertyName && l.propertyName.trim()) || "Unnamed Property"}
+                                <span className="text-slate-500 text-xs ml-2 hidden lg:inline">
+                                  | {rightOfPipe}
+                                </span>
+                              </p>
+                              <p className="text-slate-500 text-xs lg:text-sm mt-1">
+                                {l.loanNumber}
+                              </p>
+                              {cityState && (
+                                <p className="text-slate-500 text-xs mt-1 lg:hidden">{cityState}</p>
+                              )}
+                            </div>
+                            <div className="text-left sm:text-right">
+                              <p className="font-medium text-sm lg:text-base">
+                                {fmtUSD(l.principalBalance)}
+                              </p>
+                              <p className="text-xs text-slate-500 capitalize">{l.status || "unknown"}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        onClick={navigateToLoans}
+                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        View all loans →
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="py-8 text-center">
+                    <p className="text-slate-500 text-sm lg:text-base">
+                      No data loaded yet.{" "}
+                      <button 
+                        onClick={navigateToImport}
+                        className="text-blue-600 hover:text-blue-800 underline"
+                      >
+                        Import a file
+                      </button>{" "}
+                      to begin.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Divider & drag handle (lg+) */}
+            {isDesktop && mounted && (
+              <div className="hidden lg:block w-1 relative flex-shrink-0" aria-hidden="true">
+                <div className="absolute inset-y-0 left-[-0.5px] w-[1px] bg-slate-200" />
+                <button
+                  onMouseDown={beginDrag}
+                  className="absolute top-1/2 -translate-y-1/2 -left-2 h-10 w-4 cursor-col-resize rounded border border-slate-300 bg-white shadow-sm hover:bg-slate-50 z-10"
+                  title="Drag to resize chat"
+                  aria-label="Resize chat panel"
+                />
+              </div>
+            )}
+
+            {/* RIGHT: AI chat - hidden on small screens unless toggled */}
+            {isDesktop && mounted ? (
+              <div
+                className="border rounded-xl lg:rounded-2xl shadow-sm bg-white overflow-hidden flex-shrink-0"
+                style={{ ...rightStyle, minWidth: "280px", maxWidth: "600px" }}
+              >
+                <div className="h-[calc(100vh-8rem)] sticky top-4">
+                  <ChatPanel mode="portfolio" />
+                </div>
+              </div>
+            ) : (
+              <div className="lg:hidden mt-6">
+                <div className="border rounded-xl shadow-sm bg-white overflow-hidden">
+                  <div className="h-[400px]">
+                    <ChatPanel mode="portfolio" />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
