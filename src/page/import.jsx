@@ -38,9 +38,10 @@ function normalizeHeader(h) {
 }
 
 function sheetToJSONNormalized(ws, XLSX) {
+  // Get both raw values AND formatted text
   const rows = XLSX.utils.sheet_to_json(ws, {
     header: 1,
-    raw: true,
+    raw: false, // Get formatted text instead of raw values
     defval: "",
   });
 
@@ -123,34 +124,8 @@ function sheetToJSONNormalized(ws, XLSX) {
       const obj = {};
       headers.forEach((h) => {
         const cellValue = r[h.index];
-        // Convert Excel object to primitive value if needed
-        if (cellValue && typeof cellValue === 'object' && cellValue.t) {
-          switch (cellValue.t) {
-            case 'n': // number
-              obj[h.normalized] = cellValue.v;
-              break;
-            case 'd': // date
-              try {
-                obj[h.normalized] = new Date(cellValue.v);
-              } catch (e) {
-                obj[h.normalized] = cellValue.v;
-              }
-              break;
-            case 'b': // boolean
-              obj[h.normalized] = cellValue.v;
-              break;
-            case 's': // string
-              obj[h.normalized] = cellValue.v;
-              break;
-            case 'e': // error
-              obj[h.normalized] = `#ERROR: ${cellValue.v}`;
-              break;
-            default:
-              obj[h.normalized] = cellValue.v || "";
-          }
-        } else {
-          obj[h.normalized] = cellValue != null ? cellValue : "";
-        }
+        // Store the value AS IS - no conversion
+        obj[h.normalized] = cellValue != null ? cellValue : "";
       });
       return obj;
     });
@@ -236,37 +211,14 @@ export default function ImportComponent() {
             return null;
           };
   
-          // Helper function to parse numbers from strings
-          const parseNumber = (value) => {
-            if (value == null) return null;
-            if (typeof value === 'number') return value;
-            const num = Number(String(value).replace(/[^0-9.-]+/g, ''));
-            return isNaN(num) ? null : num;
-          };
-  
-          // Helper function to parse dates
-          const parseDate = (value) => {
-            if (value == null) return null;
-            if (value instanceof Date) return value;
-            if (typeof value === 'number' && value > 30000 && value < 60000) {
-              // Excel serial date
-              return new Date(1900, 0, value - 1);
-            }
-            try {
-              const date = new Date(value);
-              return isNaN(date.getTime()) ? null : date;
-            } catch (e) {
-              return null;
-            }
-          };
-  
+          // ⚠️ NO PARSING - store values EXACTLY as they appear in Excel
           return {
             id: `loan-${index + 1}-${Date.now()}`,
             loanNumber: findValue(['loan_number', 'loan_no', 'loan', 'id', 'loanid', 'loan#', 'loan #']) || `LN-${index + 1}`,
             propertyName: findValue(['property_name', 'property', 'address', 'property_address', 'property name', 'property_name', 'asset_name', 'asset']) || 'Unknown Property',
             city: findValue(['city', 'location_city', 'city_name', 'property_city']) || '',
             state: findValue(['state', 'location_state', 'state_name', 'property_state']) || '',
-            principalBalance: parseNumber(findValue(['principal_balance', 'balance', 'loan_amount', 'amount', 'principal', 'current_balance', 'outstanding', 'loan_balance'])),
+            principalBalance: findValue(['principal_balance', 'balance', 'loan_amount', 'amount', 'principal', 'current_balance', 'outstanding', 'loan_balance']),
             status: (() => {
               const statusVal = findValue(['status', 'loan_status', 'current_status', 'performance', 'performing_status']);
               if (!statusVal) return 'performing';
@@ -276,14 +228,17 @@ export default function ImportComponent() {
               if (statusStr.includes('default') || statusStr.includes('delinquent') || statusStr.includes('non-performing')) return 'default';
               return 'performing';
             })(),
-            riskScore: parseNumber(findValue(['risk_score', 'risk', 'score', 'rating', 'risk_rating', 'internal_rating'])),
-            nextReviewAt: parseDate(findValue(['next_review', 'review_date', 'next_date', 'review', 'next_review_date', 'review_date_next'])),
+            riskScore: findValue(['risk_score', 'risk', 'score', 'rating', 'risk_rating', 'internal_rating']),
+            nextReviewAt: findValue(['next_review', 'review_date', 'next_date', 'review', 'next_review_date', 'review_date_next']),
             borrowerName: findValue(['borrower_name', 'borrower', 'owner', 'owner_name', 'sponsor', 'client_name', 'customer']),
-            maturityDate: parseDate(findValue(['maturity_date', 'maturity', 'term_end', 'loan_maturity', 'end_date'])),
-            interestRate: parseNumber(findValue(['interest_rate', 'rate', 'coupon', 'interest'])),
+            maturityDate: findValue(['maturity_date', 'maturity', 'term_end', 'loan_maturity', 'end_date']),
+            // ⚠️ NO PARSING - store EXACTLY as in Excel ("5%", "5.00%", etc.)
+            interestRate: findValue(['interest_rate', 'rate', 'coupon', 'interest']),
             propertyType: findValue(['property_type', 'type', 'asset_type', 'collateral_type']),
-            loanToValue: parseNumber(findValue(['loan_to_value', 'ltv', 'loan_to_value_ratio'])),
-            debtServiceCoverageRatio: parseNumber(findValue(['dscr', 'debt_service_coverage', 'debt_service_coverage_ratio'])),
+            // ⚠️ NO PARSING - store EXACTLY as in Excel ("75%", "75.5%", etc.)
+            loanToValue: findValue(['loan_to_value', 'ltv', 'loan_to_value_ratio']),
+            // ⚠️ NO PARSING - store EXACTLY as in Excel
+            debtServiceCoverageRatio: findValue(['dscr', 'debt_service_coverage', 'debt_service_coverage_ratio']),
             loanTerm: findValue(['loan_term', 'term', 'duration']),
             
             // Store all raw data for reference
@@ -293,7 +248,7 @@ export default function ImportComponent() {
             _sourceFile: file.name,
             _sheetName: loansSheetName
           };
-        }).filter(loan => loan.loanNumber && loan.loanNumber !== 'LN-0'); // Filter out invalid loans
+        }).filter(loan => loan.loanNumber && loan.loanNumber !== 'LN-0');
   
         if (loansForStorage.length > 0) {
           // Merge with existing loans (if any)
@@ -308,8 +263,8 @@ export default function ImportComponent() {
           // Update or add new loans
           loansForStorage.forEach(newLoan => {
             existingLoanMap[newLoan.loanNumber] = {
-              ...existingLoanMap[newLoan.loanNumber], // Keep existing data if any
-              ...newLoan, // Override with new data
+              ...existingLoanMap[newLoan.loanNumber],
+              ...newLoan,
               _lastUpdated: new Date().toISOString()
             };
           });
@@ -320,7 +275,6 @@ export default function ImportComponent() {
           localStorage.setItem("bynops_loans", JSON.stringify(updatedLoans));
           console.log(`Saved ${loansForStorage.length} loans to localStorage (total: ${updatedLoans.length})`);
           
-          // Show success message
           setError(null);
         } else {
           console.warn("No valid loans found in the import");
@@ -377,14 +331,14 @@ export default function ImportComponent() {
   }
 
   const handleNavigateToLoans = () => {
-    window.location.href = "/loan";
+    window.location.href = "/loans";
   };
 
   const handleNavigateToDocuments = () => {
     window.location.href = "/documents";
   };
 
-  // Format cell value for display
+  // Format cell value for display - SHOW EXACTLY AS STORED
   const formatCellValue = (value) => {
     if (value == null || value === "") {
       return <span className="text-gray-400 italic">empty</span>;
@@ -399,19 +353,7 @@ export default function ImportComponent() {
       }
     }
     
-    // Check if it's a number
-    if (typeof value === 'number') {
-      // Check if it's a currency-like number
-      if (Math.abs(value) > 1000 || value % 1 !== 0) {
-        return value.toLocaleString('en-US', {
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 2
-        });
-      }
-      return value.toString();
-    }
-    
-    // String - truncate if too long
+    // ⚠️ NO SPECIAL FORMATTING - show EXACTLY as stored
     const str = String(value);
     if (str.length > 50) {
       return str.substring(0, 47) + "...";
@@ -524,12 +466,6 @@ export default function ImportComponent() {
                 </p>
               </div>
               <div className="flex gap-3">
-                <button 
-                  onClick={handleNavigateToDocuments} 
-                  className="text-gray-600 hover:text-gray-800 font-medium text-sm lg:text-base whitespace-nowrap"
-                >
-                  View All Files →
-                </button>
                 <button 
                   onClick={handleNavigateToLoans} 
                   className="text-blue-600 hover:text-blue-800 font-medium text-sm lg:text-base whitespace-nowrap"
@@ -701,30 +637,6 @@ export default function ImportComponent() {
                     >
                       Copy data (TSV)
                     </button>
-                  </div>
-                </div>
-
-                {/* Column headers list */}
-                <div className="mb-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">Columns in this sheet:</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {sheetData[activeSheet].headers.map((header, idx) => (
-                      <div 
-                        key={idx} 
-                        className="px-3 py-1.5 bg-gray-100 rounded text-xs text-gray-700 flex items-center gap-2"
-                        title={`Normalized: ${header.normalized}`}
-                      >
-                        <span className="font-medium">
-                          {header.original}
-                        </span>
-                        {header.normalized !== "_empty_" && (
-                          <>
-                            <span className="text-gray-500 text-xs">→</span>
-                            <code className="text-gray-600 text-xs">{header.normalized}</code>
-                          </>
-                        )}
-                      </div>
-                    ))}
                   </div>
                 </div>
 

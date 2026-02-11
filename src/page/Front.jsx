@@ -23,28 +23,25 @@ export default function Landing() {
       </div>
 
       {/* Top nav */}
-      <header className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-5">
-        <Link to="/" className="group inline-flex items-center gap-2">
-          <div className="grid h-8 w-8 place-items-center rounded-xl bg-black text-white shadow-sm">
-            <span className="text-xs font-bold">Bn</span>
-          </div>
-          <span className="font-semibold tracking-tight">Bynops</span>
-          <Sparkles className="ml-1 h-4 w-4 text-indigo-500 opacity-0 transition group-hover:opacity-100" />
-        </Link>
-        <nav className="hidden items-center gap-6 text-sm text-slate-600 md:flex">
-          <a href="#features" className="hover:text-black">Features</a>
-          <a href="#how" className="hover:text-black">How it works</a>
-          <a href="#security" className="hover:text-black">Security</a>
-        </nav>
-        <div className="flex items-center gap-3">
-          <Link to="/overview" className="rounded-full border border-slate-300 px-3 py-1.5 text-sm hover:bg-white">
-            Sign in
-          </Link>
-          <Link to="/overview" className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90">
-            Launch app <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </header>
+      <header className="sticky top-0 z-50 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-5 backdrop-blur-md bg-white/10 border-b  shadow-sm">
+  <Link to="/" className="group inline-flex items-center gap-2">
+    <div className="grid h-8 w-8 place-items-center rounded-xl bg-black text-white shadow-sm">
+      <span className="text-xs font-bold">Bn</span>
+    </div>
+    <span className="font-semibold tracking-tight">Bynops</span>
+    <Sparkles className="ml-1 h-4 w-4 text-indigo-500 opacity-0 transition group-hover:opacity-100" />
+  </Link>
+  <nav className="hidden items-center gap-6 text-sm text-slate-600 md:flex">
+    <a href="#features" className="hover:text-black">Features</a>
+    <a href="#how" className="hover:text-black">How it works</a>
+    <a href="#security" className="hover:text-black">Security</a>
+  </nav>
+  <div className="flex items-center gap-3">
+    <Link to="/signup" className="rounded-full border border-slate-300 px-3 py-1.5 text-sm hover:bg-white">
+      Sign Up
+    </Link>
+  </div>
+</header>
 
       {/* Hero */}
       <main className="mx-auto grid w-full max-w-7xl place-items-center px-6 pt-6">
@@ -86,11 +83,9 @@ export default function Landing() {
                 transition={{ delay: 0.15, duration: 0.6, ease: "easeOut" }}
                 className="flex flex-wrap items-center gap-3"
               >
-                <Link to="/import" className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-2.5 text-white shadow hover:opacity-90">
-                  <Upload className="h-4 w-4"/> Import .xlsx
-                </Link>
-                <Link to="/overview" className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 hover:bg-white">
-                  Go to Dashboard <ArrowRight className="h-4 w-4"/>
+
+                <Link to="/login" className="inline-flex items-center gap-2 rounded-full border px-5 py-2.5 hover:bg-white">
+                Log In <ArrowRight className="h-4 w-4"/>
                 </Link>
                 <span className="ml-2 hidden rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600 md:inline">⌘K Command Palette</span>
               </motion.div>
@@ -206,12 +201,12 @@ export default function Landing() {
             <div className="space-y-4">
               <h2 className="text-2xl font-semibold">From file → portfolio insight in minutes</h2>
               <ol className="space-y-3 text-slate-700">
-                <li className="flex items-start gap-3"><span className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black text-xs font-medium text-white">1</span><div><span className="font-medium">Import your data.</span> Drag an <code>.xlsx</code> into <Link to="/import" className="underline">Import</Link>.</div></li>
-                <li className="flex items-start gap-3"><span className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black text-xs font-medium text-white">2</span><div><span className="font-medium">Review the dashboard.</span> See totals, flags, and upcoming reviews on <Link to="/loans" className="underline">Loans</Link>.</div></li>
+                <li className="flex items-start gap-3"><span className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black text-xs font-medium text-white">1</span><div><span className="font-medium">Import your data.</span> Drag an <code>.xlsx</code> into Import.</div></li>
+                <li className="flex items-start gap-3"><span className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black text-xs font-medium text-white">2</span><div><span className="font-medium">Review the dashboard.</span> See totals, flags, and upcoming reviews on Loans.</div></li>
                 <li className="flex items-start gap-3"><span className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black text-xs font-medium text-white">3</span><div><span className="font-medium">Ask the assistant.</span> "Top 5 by balance in TX" or "leases expiring next 90 days".</div></li>
               </ol>
               <div className="pt-2">
-                <Link to="/overview" className="inline-flex items-center gap-2 rounded-full border px-4 py-2 hover:bg-white">
+                <Link to="/login" className="inline-flex items-center gap-2 rounded-full border px-4 py-2 hover:bg-white">
                   Explore the demo <ArrowRight className="h-4 w-4"/>
                 </Link>
               </div>

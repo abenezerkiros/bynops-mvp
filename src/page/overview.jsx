@@ -31,29 +31,93 @@ export default function DashboardPage() {
     }
   }, []);
 
+  // Helper function to extract numeric value from formatted strings
+  const extractNumericValue = (value) => {
+    if (value == null) return 0;
+    
+    // If it's already a number
+    if (typeof value === 'number') return value;
+    
+    // If it's a string with $, %, commas, etc.
+    if (typeof value === 'string') {
+      // Remove $, commas, % signs, and other non-numeric characters except decimal point and minus sign
+      const cleaned = value.replace(/[^0-9.-]/g, '');
+      const num = parseFloat(cleaned);
+      return isNaN(num) ? 0 : num;
+    }
+    
+    // Try to convert to number
+    const num = Number(value);
+    return isNaN(num) ? 0 : num;
+  };
+
   const kpis = useMemo(() => {
-    const total = loans.reduce(
-      (sum, l) => sum + (Number(l.principalBalance) || 0),
-      0
-    );
-    const performing = loans.filter((l) => l.status === "performing").length;
-    const watchlist = loans.filter((l) => l.status === "watchlist").length;
-    const def = loans.filter((l) => l.status === "default").length;
+    // Handle both raw numbers and formatted strings for total balance
+    const total = loans.reduce((sum, l) => {
+      const balance = l.principalBalance;
+      return sum + extractNumericValue(balance);
+    }, 0);
+    
+    // Handle status strings case-insensitively
+    const performing = loans.filter((l) => {
+      const status = l.status;
+      if (typeof status === 'string') {
+        return status.toLowerCase() === 'performing';
+      }
+      return status === 'performing';
+    }).length;
+    
+    const watchlist = loans.filter((l) => {
+      const status = l.status;
+      if (typeof status === 'string') {
+        return status.toLowerCase() === 'watchlist' || status.toLowerCase().includes('watch');
+      }
+      return status === 'watchlist';
+    }).length;
+    
+    const def = loans.filter((l) => {
+      const status = l.status;
+      if (typeof status === 'string') {
+        return status.toLowerCase() === 'default' || status.toLowerCase().includes('default') || status.toLowerCase().includes('delinquent');
+      }
+      return status === 'default';
+    }).length;
+    
     return { total, performing, watchlist, def };
   }, [loans]);
 
   const topLoans = useMemo(() => {
     return [...loans]
-      .filter((l) => l.principalBalance != null)
-      .sort((a, b) => (b.principalBalance || 0) - (a.principalBalance || 0))
+      .filter((l) => l.principalBalance != null && l.principalBalance !== '')
+      .sort((a, b) => {
+        const aVal = extractNumericValue(a.principalBalance);
+        const bVal = extractNumericValue(b.principalBalance);
+        return bVal - aVal;
+      })
       .slice(0, 5);
   }, [loans]);
 
   // Compact currency for tiles – avoids overflow (e.g., $561M)
   const formatCompactUSD = (n) => {
     if (n == null) return "";
+    
+    // If it's a formatted string with $, try to extract number first
+    if (typeof n === 'string' && n.includes('$')) {
+      const num = extractNumericValue(n);
+      if (num > 0) {
+        return new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+          notation: "compact",
+          maximumFractionDigits: 0,
+        }).format(num);
+      }
+      return n; // Return as-is if can't parse
+    }
+    
     const num = Number(n);
     if (!Number.isFinite(num)) return String(n);
+    
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -62,14 +126,23 @@ export default function DashboardPage() {
     }).format(num);
   };
 
-  const fmtUSD = (n) =>
-    n == null
-      ? "-"
-      : Number(n).toLocaleString("en-US", {
-          style: "currency",
-          currency: "USD",
-          maximumFractionDigits: 0,
-        });
+  const fmtUSD = (n) => {
+    if (n == null) return "-";
+    
+    // If it's already a formatted string with $, return as-is
+    if (typeof n === 'string' && n.includes('$')) {
+      return n;
+    }
+    
+    const num = Number(n);
+    if (isNaN(num)) return String(n);
+    
+    return num.toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    });
+  };
 
   // -----------------------------
   // Resizable chat (hydration-safe)
@@ -138,14 +211,24 @@ export default function DashboardPage() {
   // Navigation functions
   const navigateToImport = () => {
     console.log("Navigate to import page");
-    // Replace with your navigation logic
     window.location.href = "/import";
   };
 
   const navigateToLoans = () => {
     console.log("Navigate to loans page");
-    // Replace with your navigation logic
-    window.location.href = "/loan";
+    window.location.href = "/loans";
+  };
+
+  // Get display status with proper capitalization
+  const getDisplayStatus = (status) => {
+    if (!status) return 'unknown';
+    if (typeof status === 'string') {
+      const lower = status.toLowerCase();
+      if (lower === 'performing') return 'performing';
+      if (lower === 'watchlist' || lower.includes('watch')) return 'watchlist';
+      if (lower === 'default' || lower.includes('default') || lower.includes('delinquent')) return 'default';
+    }
+    return String(status).toLowerCase();
   };
 
   return (
@@ -228,67 +311,79 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Top 5 Largest Loans */}
-              <div className="rounded-xl border bg-white shadow-sm p-4 lg:p-6">
-                <h2 className="text-lg lg:text-xl font-semibold text-slate-900 mb-4">
-                  Top 5 Largest Loans
-                </h2>
+              {/* Top 5 Largest Loans - Sleeker, more compact version */}
+              <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+                <div className="px-4 py-3 border-b bg-gray-50/50 flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">
+                    Top 5 Largest Loans
+                  </h2>
+                  <span className="text-xs text-slate-500">
+                    {topLoans.length > 0 ? formatCompactUSD(topLoans[0]?.principalBalance) : '$0'} avg
+                  </span>
+                </div>
+                
                 {topLoans.length ? (
                   <>
-                    <div className="space-y-3">
-                      {topLoans.map((l) => {
+                    <div className="divide-y">
+                      {topLoans.map((l, idx) => {
                         const cityState = [l.city, l.state].filter(Boolean).join(", ");
-                        const rightOfPipe = l.propertyAddress || cityState || "—";
+                        const location = cityState || l.propertyAddress || "—";
+                        const status = getDisplayStatus(l.status);
+                        
                         return (
                           <div
-                            key={l.id}
-                            className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 py-3 border-b last:border-b-0"
+                            key={l.id || l.loanNumber}
+                            className="flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 transition-colors"
                           >
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-slate-800 truncate text-sm lg:text-base">
-                                {(l.propertyName && l.propertyName.trim()) || "Unnamed Property"}
-                                <span className="text-slate-500 text-xs ml-2 hidden lg:inline">
-                                  | {rightOfPipe}
-                                </span>
-                              </p>
-                              <p className="text-slate-500 text-xs lg:text-sm mt-1">
-                                {l.loanNumber}
-                              </p>
-                              {cityState && (
-                                <p className="text-slate-500 text-xs mt-1 lg:hidden">{cityState}</p>
-                              )}
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              <span className="text-xs font-medium text-slate-400 w-5">
+                                {idx + 1}
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium text-slate-800 truncate">
+                                  {(l.propertyName && l.propertyName.trim()) || "Unnamed Property"}
+                                </p>
+                                <p className="text-xs text-slate-500 truncate">
+                                  {l.loanNumber} • {location}
+                                </p>
+                              </div>
                             </div>
-                            <div className="text-left sm:text-right">
-                              <p className="font-medium text-sm lg:text-base">
+                            <div className="text-right ml-2">
+                              <p className="text-sm font-medium text-slate-800">
                                 {fmtUSD(l.principalBalance)}
                               </p>
-                              <p className="text-xs text-slate-500 capitalize">{l.status || "unknown"}</p>
+                              <p className={`text-xs capitalize ${
+                                status === 'performing' ? 'text-emerald-600' : 
+                                status === 'watchlist' ? 'text-amber-600' : 
+                                status === 'default' ? 'text-red-600' : 'text-slate-500'
+                              }`}>
+                                {l.status || 'unknown'}
+                              </p>
                             </div>
                           </div>
                         );
                       })}
                     </div>
 
-                    <div className="mt-4 flex justify-end">
+                    <div className="px-4 py-2.5 border-t bg-gray-50/30 flex justify-end">
                       <button
                         onClick={navigateToLoans}
-                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                        className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline"
                       >
-                        View all loans →
+                        View all {loans.length} loans →
                       </button>
                     </div>
                   </>
                 ) : (
-                  <div className="py-8 text-center">
-                    <p className="text-slate-500 text-sm lg:text-base">
+                  <div className="py-8 text-center px-4">
+                    <p className="text-slate-500 text-sm">
                       No data loaded yet.{" "}
                       <button 
                         onClick={navigateToImport}
                         className="text-blue-600 hover:text-blue-800 underline"
                       >
                         Import a file
-                      </button>{" "}
-                      to begin.
+                      </button>
                     </p>
                   </div>
                 )}
@@ -315,14 +410,14 @@ export default function DashboardPage() {
                 style={{ ...rightStyle, minWidth: "280px", maxWidth: "600px" }}
               >
                 <div className="h-[calc(100vh-8rem)] sticky top-4">
-                  <ChatPanel mode="portfolio" />
+                  <ChatPanel mode="portfolio" showWelcomeMessage={false} />
                 </div>
               </div>
             ) : (
               <div className="lg:hidden mt-6">
                 <div className="border rounded-xl shadow-sm bg-white overflow-hidden">
                   <div className="h-[400px]">
-                    <ChatPanel mode="portfolio" />
+                    <ChatPanel mode="portfolio" showWelcomeMessage={false} />
                   </div>
                 </div>
               </div>

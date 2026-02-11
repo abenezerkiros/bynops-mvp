@@ -34,15 +34,53 @@ const statusChip = (s) => {
   return className;
 };
 
-const fmtUSD = (n) => {
-  if (n == null || n === "") return "";
-  const num = Number(n);
-  if (isNaN(num)) return String(n);
+// Format currency - handles both numbers and formatted strings
+const fmtUSD = (value) => {
+  if (value == null || value === "") return "";
+  
+  // If it's already a string with $, return as is
+  if (typeof value === 'string' && value.includes('$')) {
+    return value;
+  }
+  
+  const num = Number(value);
+  if (isNaN(num)) return String(value);
+  
   return num.toLocaleString("en-US", {
     style: "currency",
     currency: "USD",
     maximumFractionDigits: 0,
   });
+};
+
+// Format percentage - handles both numbers and formatted strings
+const fmtPercent = (value) => {
+  if (value == null || value === "") return "";
+  
+  // If it's already a string with %, return as is
+  if (typeof value === 'string' && value.includes('%')) {
+    return value;
+  }
+  
+  const num = Number(value);
+  if (isNaN(num)) return String(value);
+  
+  return `${num.toFixed(2)}%`;
+};
+
+// Format ratio - handles both numbers and formatted strings
+const fmtRatio = (value) => {
+  if (value == null || value === "") return "";
+  
+  // If it's already a string with x, return as is
+  if (typeof value === 'string' && value.includes('x')) {
+    return value;
+  }
+  
+  const num = Number(value);
+  if (isNaN(num)) return String(value);
+  
+  return `${num.toFixed(2)}x`;
 };
 
 // Format Excel serial dates and add relative text
@@ -62,10 +100,15 @@ const fmtDate = (d) => {
       date = new Date(d);
     }
   } else if (typeof d === 'string') {
-    date = new Date(d);
+    // Check if it's already formatted
+    if (d.includes('/') || d.includes('-')) {
+      date = new Date(d);
+    } else {
+      return d; // Return as-is if can't parse
+    }
   }
   
-  if (!date || isNaN(date.getTime())) return null;
+  if (!date || isNaN(date.getTime())) return d; // Return original if can't parse
 
   const main = date.toLocaleDateString("en-US", {
     year: "numeric",
@@ -96,6 +139,7 @@ export default function LoansPage() {
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [allColumns, setAllColumns] = useState([]);
   const [visibleColumns, setVisibleColumns] = useState([]);
+  const [isColumnDropdownOpen, setIsColumnDropdownOpen] = useState(false);
 
   // Load imported data from localStorage
   useEffect(() => {
@@ -133,7 +177,26 @@ export default function LoansPage() {
         
         const columnsArray = Array.from(columnsSet);
         setAllColumns(columnsArray);
-        setVisibleColumns(columnsArray.slice(0, 15)); // Show first 15 columns by default
+        
+        // Default visible columns - REMOVED: id, riskScore, nextReviewAt
+        // Now showing: loanNumber, propertyName, city, state, principalBalance, status, borrowerName, maturityDate, interestRate, propertyType, loanToValue, debtServiceCoverageRatio
+        const defaultColumns = [
+          'loanNumber',
+          'propertyName',
+          'city',
+          'state',
+          'principalBalance',
+          'status',
+          'borrowerName',
+          'maturityDate',
+          'interestRate',
+          'propertyType',
+          'loanToValue',
+          'debtServiceCoverageRatio',
+          'loanTerm'
+        ].filter(col => columnsArray.includes(col)); // Only include columns that actually exist in the data
+        
+        setVisibleColumns(defaultColumns.slice(0, 15));
         console.log(`Loaded ${parsed.length} loans with ${columnsArray.length} unique columns`);
       }
     } catch (error) {
@@ -164,13 +227,45 @@ export default function LoansPage() {
 
   // Summary KPIs
   const kpis = useMemo(() => {
-    const total = rows.reduce(
-      (sum, r) => sum + (Number(r.principalBalance) || 0),
-      0
-    );
-    const performing = rows.filter((r) => r.status === "performing").length;
-    const wl = rows.filter((r) => r.status === "watchlist").length;
-    const def = rows.filter((r) => r.status === "default").length;
+    // Handle both raw numbers and formatted strings
+    const total = rows.reduce((sum, r) => {
+      const balance = r.principalBalance;
+      if (balance == null) return sum;
+      
+      // If it's a string with $, remove $ and commas
+      if (typeof balance === 'string') {
+        const num = Number(balance.replace(/[$,]/g, ''));
+        return sum + (isNaN(num) ? 0 : num);
+      }
+      
+      // If it's a number
+      return sum + (Number(balance) || 0);
+    }, 0);
+    
+    const performing = rows.filter((r) => {
+      const status = r.status;
+      if (typeof status === 'string') {
+        return status.toLowerCase() === 'performing';
+      }
+      return r.status === 'performing';
+    }).length;
+    
+    const wl = rows.filter((r) => {
+      const status = r.status;
+      if (typeof status === 'string') {
+        return status.toLowerCase() === 'watchlist';
+      }
+      return r.status === 'watchlist';
+    }).length;
+    
+    const def = rows.filter((r) => {
+      const status = r.status;
+      if (typeof status === 'string') {
+        return status.toLowerCase() === 'default' || status.toLowerCase().includes('default');
+      }
+      return r.status === 'default';
+    }).length;
+    
     const totalLoans = rows.length;
     
     return { 
@@ -189,10 +284,17 @@ export default function LoansPage() {
   };
 
   // Navigate to loan detail
-  const navigateToLoanDetail = (loan) => {
-    localStorage.setItem("selected_loan_detail", JSON.stringify(loan));
-    window.location.href = `/dashboard?loan=${encodeURIComponent(loan.id || loan.loanNumber)}`;
-  };
+// Navigate to loan detail - PASS THE ENTIRE LOAN OBJECT
+const navigateToLoanDetail = (loan) => {
+  // Find the full loan object from rows array using the loan number or id
+  const fullLoan = rows.find(l => 
+    (l.id && l.id === loan.id) || 
+    (l.loanNumber && l.loanNumber === loan.loanNumber)
+  ) || loan; // Fallback to the passed loan if not found
+  
+  localStorage.setItem("selected_loan_detail", JSON.stringify(fullLoan));
+  window.location.href = `/dashboard?loan=${encodeURIComponent(fullLoan.id || fullLoan.loanNumber)}`;
+};
 
   // Get display name for column
   const getColumnDisplayName = (column) => {
@@ -227,7 +329,7 @@ export default function LoansPage() {
             .trim();
   };
 
-  // Format cell value based on column type
+  // Format cell value based on column type - UPDATED for non-parse import
   const formatCellValue = (loan, column) => {
     let value = loan[column];
     
@@ -240,14 +342,11 @@ export default function LoansPage() {
       return <span className="text-gray-400 italic">-</span>;
     }
     
-    // Special formatting for specific columns
+    // Special formatting for specific columns - but respect pre-formatted values
     if (column.includes('balance') || column.includes('amount') || 
         column.includes('noi') || column.includes('debt') || 
         column.includes('principal') || column.includes('value')) {
-      const num = Number(value);
-      if (!isNaN(num)) {
-        return fmtUSD(num);
-      }
+      return fmtUSD(value);
     }
     
     if (column === 'status' || column.toLowerCase().includes('status')) {
@@ -265,7 +364,7 @@ export default function LoansPage() {
     
     if (column.includes('date') || column.includes('review') || column.includes('maturity') || column.includes('due')) {
       const dateInfo = fmtDate(value);
-      if (dateInfo) {
+      if (dateInfo && typeof dateInfo === 'object') {
         return (
           <div className="whitespace-nowrap">
             <div>{dateInfo.main}</div>
@@ -273,13 +372,16 @@ export default function LoansPage() {
           </div>
         );
       }
+      // Return as-is if can't parse
+      return String(value);
     }
     
-    if (column.includes('rate') || column.includes('percentage') || column.includes('ltv') || column.includes('dscr')) {
-      const num = Number(value);
-      if (!isNaN(num)) {
-        return `${num.toFixed(2)}%`;
-      }
+    if (column.includes('rate') || column.includes('percentage') || column.includes('ltv')) {
+      return fmtPercent(value);
+    }
+    
+    if (column.includes('dscr') || column.includes('coverage')) {
+      return fmtRatio(value);
     }
     
     if (column.includes('score') || column.includes('rating') || column.includes('risk')) {
@@ -291,6 +393,7 @@ export default function LoansPage() {
         else if (num >= 30) color = 'text-emerald-600';
         return <span className={color}>{num}</span>;
       }
+      return String(value);
     }
     
     if (column === 'tenants' && Array.isArray(value)) {
@@ -315,12 +418,28 @@ export default function LoansPage() {
     return str;
   };
 
-  // Toggle column visibility
+  // Toggle column visibility - preserves original column order
   const toggleColumn = (column) => {
     if (visibleColumns.includes(column)) {
       setVisibleColumns(visibleColumns.filter(c => c !== column));
     } else {
-      setVisibleColumns([...visibleColumns, column]);
+      // Find the index of this column in allColumns
+      const columnIndexInAllColumns = allColumns.indexOf(column);
+      
+      // Insert the column at its correct position based on allColumns order
+      const newVisibleColumns = [...visibleColumns];
+      
+      // Find where to insert based on allColumns order
+      let insertIndex = 0;
+      for (let i = 0; i < newVisibleColumns.length; i++) {
+        const currentColumnIndex = allColumns.indexOf(newVisibleColumns[i]);
+        if (currentColumnIndex < columnIndexInAllColumns) {
+          insertIndex = i + 1;
+        }
+      }
+      
+      newVisibleColumns.splice(insertIndex, 0, column);
+      setVisibleColumns(newVisibleColumns);
     }
   };
 
@@ -337,6 +456,17 @@ export default function LoansPage() {
     return allData;
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (isColumnDropdownOpen && !e.target.closest('.column-dropdown')) {
+        setIsColumnDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isColumnDropdownOpen]);
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
@@ -349,7 +479,7 @@ export default function LoansPage() {
                 Loans
               </h1>
               <p className="text-slate-500 text-sm lg:text-base mt-1">
-                {rows.length} loan{rows.length !== 1 ? 's' : ''} • {allColumns.length} columns
+                {rows.length} loan{rows.length !== 1 ? 's' : ''} 
               </p>
             </div>
 
@@ -417,8 +547,8 @@ export default function LoansPage() {
             </div>
           </div>
 
-          {/* Column Filter */}
-          <div className="mb-4 p-4 bg-slate-50 rounded-lg">
+          {/* Column Filter - Changed to Dropdown */}
+          <div className="mb-4 p-4 bg-slate-50 rounded-lg column-dropdown relative">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-slate-900">Visible Columns ({visibleColumns.length} of {allColumns.length})</h3>
               <div className="flex gap-2">
@@ -435,28 +565,61 @@ export default function LoansPage() {
                   Hide All
                 </button>
                 <button
-                  onClick={() => setVisibleColumns(allColumns.slice(0, 10))}
+                  onClick={() => setVisibleColumns([
+                    'loanNumber',
+                    'propertyName',
+                    'city',
+                    'state',
+                    'principalBalance',
+                    'status',
+                    'borrowerName',
+                    'maturityDate',
+                    'interestRate',
+                    'propertyType',
+                    'loanToValue',
+                    'debtServiceCoverageRatio',
+                    'loanTerm'
+                  ].filter(col => allColumns.includes(col)))}
                   className="text-xs text-slate-600 hover:text-slate-800"
                 >
-                  Reset
+                  Default View
                 </button>
               </div>
             </div>
-            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-              {allColumns.map(column => (
-                <label key={column} className="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={visibleColumns.includes(column)}
-                    onChange={() => toggleColumn(column)}
-                    className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-xs text-slate-700">
-                    {getColumnDisplayName(column)}
-                  </span>
-                </label>
-              ))}
-            </div>
+            
+            {/* Dropdown Button */}
+            <button
+              onClick={() => setIsColumnDropdownOpen(!isColumnDropdownOpen)}
+              className="w-full px-3 py-2 text-left text-sm bg-white border border-gray-300 rounded-lg shadow-sm flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <span className="text-slate-700">Select columns to display...</span>
+              <svg className={`w-5 h-5 text-slate-500 transition-transform ${isColumnDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            
+            {/* Dropdown Menu */}
+            {isColumnDropdownOpen && (
+              <div className="absolute z-20 mt-1 w-full max-h-64 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+                <div className="p-2">
+                  <div className="flex flex-wrap gap-2">
+                    {allColumns.map(column => (
+                      <label key={column} className="inline-flex items-center p-1.5 hover:bg-slate-50 rounded w-full sm:w-auto cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={visibleColumns.includes(column)}
+                          onChange={() => toggleColumn(column)}
+                          className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                        />
+                        <span className="ml-2 text-xs text-slate-700">
+                          {getColumnDisplayName(column)}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Loans Table - Shows ALL columns */}
@@ -502,7 +665,7 @@ export default function LoansPage() {
                           >
                             {colIndex === 0 ? (
                               <button
-                                onClick={() => navigateToLoanDetail(allData)}
+                                onClick={() => navigateToLoanDetail(loan)}
                                 className="text-blue-600 hover:text-blue-800 hover:underline text-left w-full text-start"
                               >
                                 {formatCellValue(loan, column)}
@@ -678,7 +841,7 @@ export default function LoansPage() {
                   <button
                     onClick={() => {
                       setSelectedLoan(null);
-                      navigateToLoanDetail(selectedLoan);
+                      navigateToLoanDetail(loan);
                     }}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                   >

@@ -102,18 +102,20 @@ function DataTable({ table }) {
   );
 }
 
-// 🔹 Now includes `mode`
-export default function ChatPanel({ initialContext, mode = "portfolio" }) {
+// 🔹 Now includes `mode` and `showWelcomeMessage` prop
+export default function ChatPanel({ initialContext, mode = "portfolio", showWelcomeMessage = true }) {
   const [_ctx] = useState(initialContext ?? {});
-  const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      content:
-        mode === "loan"
-          ? "Hi! I can help you think through workout options, risks, and next steps for this loan."
-          : "Hi! Ask me about your portfolio (e.g., 'Which loans are at risk?', 'Show maturities in the next 12 months').",
-    },
-  ]);
+  
+  // Initialize messages based on showWelcomeMessage prop
+  const initialMessages = showWelcomeMessage ? [{
+    role: "assistant",
+    content:
+      mode === "loan"
+        ? "Hi! I can help you think through workout options, risks, and next steps for this loan."
+        : "Hi! Ask me about your portfolio (e.g., 'Which loans are at risk?', 'Show maturities in the next 12 months').",
+  }] : [];
+  
+  const [messages, setMessages] = useState(initialMessages);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -256,9 +258,10 @@ export default function ChatPanel({ initialContext, mode = "portfolio" }) {
         </div>
       )}
 
-      {/* composer */}
-      <div className="p-3 border-t">
-        <div className="flex gap-20">
+      {/* composer - ONLY THE SEND BUTTON AREA CHANGED */}
+        {/* composer - ONLY THE SEND BUTTON AREA AND INPUT BORDER CHANGED */}
+        <div className="p-3 border-t">
+        <div className="flex gap-2">
           <Input
             placeholder={
               mode === "loan"
@@ -269,11 +272,18 @@ export default function ChatPanel({ initialContext, mode = "portfolio" }) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
             disabled={busy}
-            className="text-sm"
+            className="text-sm flex-1 border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
-          <Button onClick={() => send()} disabled={busy || !input.trim()} size="sm">
+          <button
+            onClick={() => send()}
+            disabled={busy || !input.trim()}
+            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm flex items-center gap-1"
+          >
             Send
-          </Button>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+          </button>
         </div>
         <p className="mt-2 text-[11px] text-slate-400">
           We only use data in your current browser session.

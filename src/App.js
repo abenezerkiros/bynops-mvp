@@ -27,7 +27,7 @@ function AppRoutes() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/front" element={<Landing />} />
+        <Route path="/" element={<Landing />} />
         <Route path="/loan-documents" element={<LoanDocumentsPage />} />
         <Route 
           path="/admin" 
@@ -70,7 +70,7 @@ function AppRoutes() {
           } 
         />
                                  <Route 
-          path="/loan" 
+          path="/loans" 
           element={
             currentUser && userData?.role === 'user' ? 
             <Loan /> : 

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Sidebar from "../page/sidenav";
+import { Link } from "react-router-dom";
 
 // Mock functions
 const saveFile = async (file, metadata) => {
@@ -61,7 +62,6 @@ const listDocsByLoan = (loanNumber) => {
 
 const getDocumentsSummary = (loans) => {
   const allDocs = JSON.parse(localStorage.getItem("bynops_documents") || "[]");
-  const excelData = JSON.parse(localStorage.getItem("bynops_excel_data") || "null");
   
   return loans.map(loan => {
     const loanDocs = allDocs.filter(doc => doc.loanNumber === loan.loanNumber);
@@ -80,10 +80,12 @@ const getDocumentsSummary = (loans) => {
 export default function DocumentsPage() {
   const [q, setQ] = useState("");
   const [loans, setLoans] = useState([]);
+  const [documents, setDocuments] = useState([]); // New state for all documents
   const [uploading, setUploading] = useState(false);
   const [allColumns, setAllColumns] = useState([]);
   const [visibleColumns, setVisibleColumns] = useState([]);
   const [selectedLoan, setSelectedLoan] = useState(null);
+  const [selectedDocument, setSelectedDocument] = useState(null); // New state for selected document
   const [uploadMetadata, setUploadMetadata] = useState({
     category: "",
     description: "",
@@ -100,6 +102,10 @@ export default function DocumentsPage() {
       // Add document summary to each loan
       const loansWithDocs = getDocumentsSummary(arr);
       setLoans(loansWithDocs);
+      
+      // Load all documents
+      const allDocs = JSON.parse(localStorage.getItem("bynops_documents") || "[]");
+      setDocuments(allDocs);
       
       // Extract ALL unique columns from all loans
       const columnsSet = new Set();
@@ -132,8 +138,8 @@ export default function DocumentsPage() {
     }
   }, []);
 
-  // Search/filter
-  const filtered = useMemo(() => {
+  // Search/filter for loans view
+  const filteredLoans = useMemo(() => {
     const t = q.trim().toLowerCase();
     if (!t) return loans;
     
@@ -152,11 +158,31 @@ export default function DocumentsPage() {
     });
   }, [q, loans]);
 
+  // Search/filter for documents view
+  const filteredDocuments = useMemo(() => {
+    const t = q.trim().toLowerCase();
+    if (!t) return documents;
+    
+    return documents.filter((doc) => {
+      const searchableText = [
+        doc.title || "",
+        doc.filename || "",
+        doc.loanNumber || "",
+        doc.category || "",
+        doc.description || "",
+        doc.tags?.join(" ") || "",
+        doc.uploadedBy || ""
+      ].join(" ").toLowerCase();
+      
+      return searchableText.includes(t);
+    });
+  }, [q, documents]);
+
   // Summary KPIs
   const kpis = useMemo(() => {
     const totalLoans = loans.length;
-    const totalDocs = loans.reduce((sum, loan) => sum + (loan.documentCount || 0), 0);
-    const totalSize = loans.reduce((sum, loan) => sum + (loan.totalSize || 0), 0);
+    const totalDocs = documents.length;
+    const totalSize = documents.reduce((sum, doc) => sum + (doc.size || 0), 0);
     const loansWithDocs = loans.filter(loan => loan.documentCount > 0).length;
     
     return { 
@@ -167,7 +193,7 @@ export default function DocumentsPage() {
       totalSize,
       avgDocsPerLoan: totalLoans > 0 ? totalDocs / totalLoans : 0
     };
-  }, [loans]);
+  }, [loans, documents]);
 
   async function onUpload(e) {
     const file = e.target.files?.[0];
@@ -177,7 +203,7 @@ export default function DocumentsPage() {
     try {
       await saveFile(file, { 
         title: file.name,
-        loanId: null, // Will be assigned when viewing specific loan
+        loanId: null,
         loanNumber: null,
         category: uploadMetadata.category,
         description: uploadMetadata.description,
@@ -191,11 +217,15 @@ export default function DocumentsPage() {
         tags: ""
       });
       
-      // Refresh loans list
+      // Refresh loans list and documents list
       const raw = localStorage.getItem("bynops_loans");
       const arr = raw ? JSON.parse(raw) : [];
       const loansWithDocs = getDocumentsSummary(arr);
       setLoans(loansWithDocs);
+      
+      // Refresh documents list
+      const allDocs = JSON.parse(localStorage.getItem("bynops_documents") || "[]");
+      setDocuments(allDocs);
       
     } catch (error) {
       console.error("Upload error:", error);
@@ -255,7 +285,31 @@ export default function DocumentsPage() {
             .trim();
   };
 
-  // Format cell value based on column type
+  // Get display name for document columns
+  const getDocumentColumnDisplayName = (column) => {
+    const displayNames = {
+      title: 'Document Name',
+      filename: 'File Name',
+      loanNumber: 'Loan #',
+      category: 'Category',
+      size: 'Size',
+      uploadedAt: 'Upload Date',
+      uploadedBy: 'Uploaded By',
+      description: 'Description',
+      tags: 'Tags',
+      extension: 'Type',
+      version: 'Version',
+      status: 'Status'
+    };
+    
+    return displayNames[column] || 
+      column.replace(/_/g, ' ')
+            .replace(/([A-Z])/g, ' $1')
+            .replace(/^./, str => str.toUpperCase())
+            .trim();
+  };
+
+  // Format cell value based on column type (for loans)
   const formatCellValue = (loan, column) => {
     const value = loan[column];
     
@@ -365,11 +419,97 @@ export default function DocumentsPage() {
     return str;
   };
 
+  // Format cell value for documents view
+  const formatDocumentCellValue = (doc, column) => {
+    const value = doc[column];
+    
+    if (value == null || value === '') {
+      return <span className="text-gray-400 italic">-</span>;
+    }
+    
+    if (column === 'size') {
+      return formatFileSize(value);
+    }
+    
+    if (column === 'uploadedAt' || column === 'lastModified') {
+      return formatDate(value);
+    }
+    
+    if (column === 'tags' && Array.isArray(value)) {
+      if (value.length === 0) return <span className="text-gray-400">-</span>;
+      return (
+        <div className="flex flex-wrap gap-1">
+          {value.slice(0, 2).map((tag, i) => (
+            <span key={i} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs">
+              {tag}
+            </span>
+          ))}
+          {value.length > 2 && (
+            <span className="text-xs text-gray-500">+{value.length - 2}</span>
+          )}
+        </div>
+      );
+    }
+    
+    if (column === 'title' || column === 'filename') {
+      return (
+        <button
+          onClick={() => setSelectedDocument(doc)}
+          className="text-blue-600 hover:text-blue-800 hover:underline text-left font-medium"
+        >
+          <div className="flex items-center gap-2">
+            {doc.extension === 'pdf' ? (
+              <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            ) : doc.extension?.match(/(xlsx|xls|csv)/) ? (
+              <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            )}
+            <span className="truncate max-w-[200px]">{value}</span>
+          </div>
+        </button>
+      );
+    }
+    
+    if (column === 'loanNumber') {
+      return value ? (
+        <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+          {value}
+        </span>
+      ) : (
+        <span className="text-gray-400 italic">Unassigned</span>
+      );
+    }
+    
+    // Default string representation
+    const str = String(value);
+    if (str.length > 30) {
+      return (
+        <span title={str} className="truncate max-w-[150px] inline-block">
+          {str.substring(0, 27)}...
+        </span>
+      );
+    }
+    
+    return str;
+  };
+
   // Navigate to loan documents page
   const navigateToLoanDocuments = (loan) => {
     localStorage.setItem("current_loan_documents", JSON.stringify(loan));
     window.location.href = `/loan-documents?loan=${encodeURIComponent(loan.loanNumber)}`;
+  };
 
+  // Download document
+  const downloadDocument = (doc) => {
+    // This is a placeholder - in a real implementation, you'd retrieve the actual file from storage
+    alert(`Download functionality would retrieve: ${doc.filename}`);
   };
 
   // Toggle column visibility
@@ -381,6 +521,17 @@ export default function DocumentsPage() {
     }
   };
 
+  // Document columns for table
+  const documentColumns = [
+    'title',
+    'loanNumber',
+    'category',
+    'size',
+    'uploadedAt',
+    'uploadedBy',
+    'tags'
+  ];
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
@@ -391,31 +542,22 @@ export default function DocumentsPage() {
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
             <div>
               <h1 className="text-2xl lg:text-3xl font-semibold tracking-tight text-slate-900">
-                Loan Documents
+                {viewMode === "loans" ? "Loan Documents" : "All Documents"}
               </h1>
               <p className="text-slate-500 text-sm lg:text-base mt-1">
-                Manage documents for each loan. Click on a loan to view and upload its documents.
+                {viewMode === "loans" 
+                  ? "Manage documents for each loan. Click on a loan to view and upload its documents."
+                  : "View all uploaded documents across all loans."}
               </p>
             </div>
 
             <div className="flex items-center gap-3">
               <label className="relative">
-                <input 
-                  type="file" 
-                  onChange={onUpload} 
-                  disabled={uploading} 
-                  className="hidden"
-                  id="file-upload"
-                  multiple
-                />
-                <div className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors cursor-pointer">
-                  {uploading ? "Uploading..." : "+ Upload General Document"}
-                </div>
-                {uploading && (
-                  <span className="absolute -bottom-6 left-0 text-xs text-gray-500 whitespace-nowrap">
-                    Uploading...
-                  </span>
-                )}
+                <Link to="/import">
+                  <div className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors cursor-pointer">
+                    + Upload General Document
+                  </div>
+                </Link>
               </label>
             </div>
           </div>
@@ -424,35 +566,45 @@ export default function DocumentsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8">
             <div className="rounded-xl lg:rounded-2xl border bg-white p-4 lg:p-6 shadow-sm">
               <div className="text-xs uppercase text-slate-400 font-medium mb-1">
-                Total Loans
+                Total {viewMode === "loans" ? "Loans" : "Documents"}
               </div>
               <div className="text-xl lg:text-2xl font-semibold truncate">
-                {kpis.totalLoans}
+                {viewMode === "loans" ? kpis.totalLoans : kpis.totalDocs}
               </div>
               <div className="text-xs text-slate-500 mt-1">
-                {kpis.totalDocs} total documents
+                {viewMode === "loans" ? `${kpis.totalDocs} total documents` : `${formatFileSize(kpis.totalSize)} total`}
               </div>
             </div>
             <div className="rounded-xl lg:rounded-2xl border bg-white p-4 lg:p-6 shadow-sm">
               <div className="text-xs uppercase text-slate-400 font-medium mb-1">
-                With Documents
+                {viewMode === "loans" ? "With Documents" : "This Month"}
               </div>
               <div className="text-xl lg:text-2xl font-semibold text-emerald-600">
-                {kpis.loansWithDocs}
+                {viewMode === "loans" 
+                  ? kpis.loansWithDocs 
+                  : documents.filter(d => {
+                      const date = new Date(d.uploadedAt);
+                      const now = new Date();
+                      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+                    }).length
+                }
               </div>
               <div className="text-xs text-slate-500 mt-1">
-                {kpis.totalLoans > 0 ? Math.round((kpis.loansWithDocs / kpis.totalLoans) * 100) : 0}% covered
+                {viewMode === "loans" ? `${Math.round((kpis.loansWithDocs / kpis.totalLoans) * 100) || 0}% covered` : 'uploaded this month'}
               </div>
             </div>
             <div className="rounded-xl lg:rounded-2xl border bg-white p-4 lg:p-6 shadow-sm">
               <div className="text-xs uppercase text-slate-400 font-medium mb-1">
-                Without Documents
+                {viewMode === "loans" ? "Without Documents" : "File Types"}
               </div>
               <div className="text-xl lg:text-2xl font-semibold text-amber-600">
-                {kpis.loansWithoutDocs}
+                {viewMode === "loans" 
+                  ? kpis.loansWithoutDocs
+                  : [...new Set(documents.map(d => d.extension))].length
+                }
               </div>
               <div className="text-xs text-slate-500 mt-1">
-                {kpis.avgDocsPerLoan.toFixed(1)} avg docs per loan
+                {viewMode === "loans" ? `${kpis.avgDocsPerLoan.toFixed(1)} avg docs per loan` : 'unique file extensions'}
               </div>
             </div>
             <div className="rounded-xl lg:rounded-2xl border bg-white p-4 lg:p-6 shadow-sm">
@@ -463,7 +615,7 @@ export default function DocumentsPage() {
                 {formatFileSize(kpis.totalSize)}
               </div>
               <div className="text-xs text-slate-500 mt-1">
-                All loan documents
+                {viewMode === "loans" ? 'All loan documents' : 'across all documents'}
               </div>
             </div>
           </div>
@@ -471,158 +623,234 @@ export default function DocumentsPage() {
           {/* Search and View Toggle */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
             <input
-              placeholder="Search loans..."
+              placeholder={viewMode === "loans" ? "Search loans..." : "Search documents..."}
               value={q}
               onChange={e => setQ(e.target.value)}
               className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <div className="flex border rounded-lg overflow-hidden">
               <button
-                onClick={() => setViewMode("loans")}
+                onClick={() => {
+                  setViewMode("loans");
+                  setQ("");
+                }}
                 className={`px-4 py-2 text-sm ${viewMode === "loans" ? 'bg-blue-100 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}
               >
                 Loans View
               </button>
               <button
-                onClick={() => setViewMode("documents")}
+                onClick={() => {
+                  setViewMode("documents");
+                  setQ("");
+                }}
                 className={`px-4 py-2 text-sm ${viewMode === "documents" ? 'bg-blue-100 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}
               >
-                All Documents
+                All Documents ({documents.length})
               </button>
             </div>
           </div>
 
-          {/* Column Filter */}
-          <div className="mb-4 p-4 bg-slate-50 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-slate-900">Visible Columns ({visibleColumns.length} of {allColumns.length})</h3>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setVisibleColumns(allColumns)}
-                  className="text-xs text-blue-600 hover:text-blue-800"
-                >
-                  Show All
-                </button>
-                <button
-                  onClick={() => setVisibleColumns([])}
-                  className="text-xs text-red-600 hover:text-red-800"
-                >
-                  Hide All
-                </button>
-                <button
-                  onClick={() => setVisibleColumns(['loanNumber', 'propertyName', 'documentCount', 'lastUploaded', 'totalSize', 'status', 'principalBalance'])}
-                  className="text-xs text-slate-600 hover:text-slate-800"
-                >
-                  Default View
-                </button>
+          {/* Column Filter - Only show in Loans View */}
+          {viewMode === "loans" && (
+            <div className="mb-4 p-4 bg-slate-50 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium text-slate-900">Visible Columns ({visibleColumns.length} of {allColumns.length})</h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setVisibleColumns(allColumns)}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    Show All
+                  </button>
+                  <button
+                    onClick={() => setVisibleColumns([])}
+                    className="text-xs text-red-600 hover:text-red-800"
+                  >
+                    Hide All
+                  </button>
+                  <button
+                    onClick={() => setVisibleColumns(['loanNumber', 'propertyName', 'documentCount', 'lastUploaded', 'totalSize', 'status', 'principalBalance'])}
+                    className="text-xs text-slate-600 hover:text-slate-800"
+                  >
+                    Default View
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                {allColumns.map(column => (
+                  <label key={column} className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={visibleColumns.includes(column)}
+                      onChange={() => toggleColumn(column)}
+                      className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-xs text-slate-700">
+                      {getColumnDisplayName(column)}
+                    </span>
+                  </label>
+                ))}
               </div>
             </div>
-            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-              {allColumns.map(column => (
-                <label key={column} className="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={visibleColumns.includes(column)}
-                    onChange={() => toggleColumn(column)}
-                    className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-xs text-slate-700">
-                    {getColumnDisplayName(column)}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
+          )}
 
-          {/* Loans Table */}
+          {/* Content Table - Switches based on viewMode */}
           <div className="rounded-xl lg:rounded-2xl border bg-white shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 text-slate-600">
-                  <tr>
-                    <th className="text-left px-4 py-3 text-xs font-medium whitespace-nowrap sticky left-0 bg-slate-50 z-10">
-                      #
-                    </th>
-                    {visibleColumns.map((column, index) => (
-                      <th 
-                        key={column} 
-                        className={`text-left px-4 py-3 text-xs font-medium whitespace-nowrap min-w-[120px] ${
-                          index === 0 ? 'sticky left-12 bg-slate-50 z-10' : ''
-                        }`}
-                        title={column}
-                      >
-                        {getColumnDisplayName(column)}
+                  {viewMode === "loans" ? (
+                    /* LOANS VIEW HEADER */
+                    <tr>
+                      <th className="text-left px-4 py-3 text-xs font-medium whitespace-nowrap sticky left-0 bg-slate-50 z-10">
+                        #
                       </th>
-                    ))}
-                    <th className="text-left px-4 py-3 text-xs font-medium whitespace-nowrap sticky right-0 bg-slate-50 z-10 min-w-[100px]">
-                      Actions
-                    </th>
-                  </tr>
+                      {visibleColumns.map((column, index) => (
+                        <th 
+                          key={column} 
+                          className={`text-left px-4 py-3 text-xs font-medium whitespace-nowrap min-w-[120px] ${
+                            index === 0 ? 'sticky left-12 bg-slate-50 z-10' : ''
+                          }`}
+                          title={column}
+                        >
+                          {getColumnDisplayName(column)}
+                        </th>
+                      ))}
+                   
+                    </tr>
+                  ) : (
+                    /* DOCUMENTS VIEW HEADER */
+                    <tr>
+                      <th className="text-left px-4 py-3 text-xs font-medium whitespace-nowrap sticky left-0 bg-slate-50 z-10">
+                        #
+                      </th>
+                      {documentColumns.map((column, index) => (
+                        <th 
+                          key={column} 
+                          className={`text-left px-4 py-3 text-xs font-medium whitespace-nowrap min-w-[120px] ${
+                            index === 0 ? 'sticky left-12 bg-slate-50 z-10' : ''
+                          }`}
+                          title={column}
+                        >
+                          {getDocumentColumnDisplayName(column)}
+                        </th>
+                      ))}
+                   
+                    </tr>
+                  )}
                 </thead>
                 <tbody>
-                  {filtered.map((loan, index) => (
-                    <tr 
-                      key={loan.id || loan.loanNumber}
-                      className="border-t hover:bg-slate-50 transition-colors"
-                    >
-                      <td className="px-4 py-3 text-xs text-slate-500 sticky left-0 bg-white z-5">
-                        {index + 1}
-                      </td>
-                      {visibleColumns.map((column, colIndex) => (
-                        <td 
-                          key={`${loan.id}-${column}`} 
-                          className={`px-4 py-3 text-xs text-slate-700 whitespace-nowrap min-w-[120px] ${
-                            colIndex === 0 ? 'sticky left-12 bg-white z-5' : ''
-                          }`}
-                          title={loan[column] != null ? String(loan[column]) : ''}
+                  {viewMode === "loans" ? (
+                    /* LOANS VIEW BODY */
+                    filteredLoans.length > 0 ? (
+                      filteredLoans.map((loan, index) => (
+                        <tr 
+                          key={loan.id || loan.loanNumber}
+                          className="border-t hover:bg-slate-50 transition-colors"
                         >
-                          {colIndex === 0 ? (
-                            <button
-                              onClick={() => navigateToLoanDocuments(loan)}
-                              className="text-blue-600 hover:text-blue-800 hover:underline text-left w-full text-start font-medium"
+                          <td className="px-4 py-3 text-xs text-slate-500 sticky left-0 bg-white z-5">
+                            {index + 1}
+                          </td>
+                          {visibleColumns.map((column, colIndex) => (
+                            <td 
+                              key={`${loan.id}-${column}`} 
+                              className={`px-4 py-3 text-xs text-slate-700 whitespace-nowrap min-w-[120px] ${
+                                colIndex === 0 ? 'sticky left-12 bg-white z-5' : ''
+                              }`}
+                              title={loan[column] != null ? String(loan[column]) : ''}
                             >
-                              {formatCellValue(loan, column)}
-                            </button>
+                              {colIndex === 0 ? (
+                                <button
+                                  onClick={() => navigateToLoanDocuments(loan)}
+                                  className="text-blue-600 hover:text-blue-800 hover:underline text-left w-full text-start font-medium"
+                                >
+                                  {formatCellValue(loan, column)}
+                                </button>
+                              ) : (
+                                formatCellValue(loan, column)
+                              )}
+                            </td>
+                          ))}
+                          <td className="px-4 py-3 text-xs sticky right-0 bg-white z-5">
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => navigateToLoanDocuments(loan)}
+                                className="text-blue-600 hover:text-blue-800 hover:underline px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                              >
+                                View Docs
+                              </button>
+                              {loan.documentCount === 0 && (
+                                <span className="text-xs text-gray-400">No docs</span>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={visibleColumns.length + 2} 
+                          className="px-4 lg:px-6 py-12 text-center text-slate-500 text-sm">
+                          {loans.length === 0 ? (
+                            <div>
+                              No loans found.{" "}
+                              <a
+                                href="/import"
+                                className="text-blue-600 hover:text-blue-800 underline"
+                              >
+                                Import loans first
+                              </a>
+                            </div>
                           ) : (
-                            formatCellValue(loan, column)
+                            "No loans match your search. Try a different search term."
                           )}
                         </td>
-                      ))}
-                      <td className="px-4 py-3 text-xs sticky right-0 bg-white z-5">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => navigateToLoanDocuments(loan)}
-                            className="text-blue-600 hover:text-blue-800 hover:underline px-2 py-1 rounded hover:bg-blue-50 transition-colors"
-                          >
-                            View Docs
-                          </button>
-                          {loan.documentCount === 0 && (
-                            <span className="text-xs text-gray-400">No docs</span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-
-                  {filtered.length === 0 && (
-                    <tr>
-                      <td colSpan={visibleColumns.length + 2} 
-                        className="px-4 lg:px-6 py-12 text-center text-slate-500 text-sm">
-                        {loans.length === 0 ? (
-                          <div>
-                            No loans found.{" "}
-                            <a
-                              href="/import"
-                              className="text-blue-600 hover:text-blue-800 underline"
+                      </tr>
+                    )
+                  ) : (
+                    /* DOCUMENTS VIEW BODY */
+                    filteredDocuments.length > 0 ? (
+                      filteredDocuments.map((doc, index) => (
+                        <tr 
+                          key={doc.id}
+                          className="border-t hover:bg-slate-50 transition-colors"
+                        >
+                          <td className="px-4 py-3 text-xs text-slate-500 sticky left-0 bg-white z-5">
+                            {index + 1}
+                          </td>
+                          {documentColumns.map((column, colIndex) => (
+                            <td 
+                              key={`${doc.id}-${column}`} 
+                              className={`px-4 py-3 text-xs text-slate-700 whitespace-nowrap min-w-[120px] ${
+                                colIndex === 0 ? 'sticky left-12 bg-white z-5' : ''
+                              }`}
+                              title={doc[column] != null ? String(doc[column]) : ''}
                             >
-                              Import loans first
-                            </a>
-                          </div>
-                        ) : (
-                          "No loans match your search. Try a different search term."
-                        )}
-                      </td>
-                    </tr>
+                              {formatDocumentCellValue(doc, column)}
+                            </td>
+                          ))}
+                       
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={documentColumns.length + 2} 
+                          className="px-4 lg:px-6 py-12 text-center text-slate-500 text-sm">
+                          {documents.length === 0 ? (
+                            <div>
+                              No documents found.{" "}
+                              <Link
+                                to="/import"
+                                className="text-blue-600 hover:text-blue-800 underline"
+                              >
+                                Upload your first document
+                              </Link>
+                            </div>
+                          ) : (
+                            "No documents match your search. Try a different search term."
+                          )}
+                        </td>
+                      </tr>
+                    )
                   )}
                 </tbody>
               </table>
@@ -632,15 +860,24 @@ export default function DocumentsPage() {
           {/* Summary Footer */}
           <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-slate-500">
             <div>
-              Showing {filtered.length} of {loans.length} loan{loans.length !== 1 ? 's' : ''} • 
-              {kpis.totalDocs} total document{kpis.totalDocs !== 1 ? 's' : ''}
+              {viewMode === "loans" ? (
+                <>
+                  Showing {filteredLoans.length} of {loans.length} loan{loans.length !== 1 ? 's' : ''} • 
+                  {kpis.totalDocs} total document{kpis.totalDocs !== 1 ? 's' : ''}
+                </>
+              ) : (
+                <>
+                  Showing {filteredDocuments.length} of {documents.length} document{documents.length !== 1 ? 's' : ''} • 
+                  {formatFileSize(kpis.totalSize)} total
+                </>
+              )}
             </div>
             <div className="flex gap-4">
               <a
                 href="/import"
                 className="text-blue-600 hover:text-blue-800 underline"
               >
-                Import More Loans
+                {viewMode === "loans" ? "Import More Loans" : "Upload More Documents"}
               </a>
             </div>
           </div>
@@ -692,6 +929,11 @@ export default function DocumentsPage() {
                         const arr = raw ? JSON.parse(raw) : [];
                         const loansWithDocs = getDocumentsSummary(arr);
                         setLoans(loansWithDocs);
+                        
+                        // Refresh documents list
+                        const allDocs = JSON.parse(localStorage.getItem("bynops_documents") || "[]");
+                        setDocuments(allDocs);
+                        
                         e.target.value = "";
                       }}
                       className="hidden"
@@ -731,7 +973,10 @@ export default function DocumentsPage() {
                               </div>
                             </div>
                             <div className="flex gap-2">
-                              <button className="text-blue-600 hover:text-blue-800 text-sm">
+                              <button 
+                                onClick={() => downloadDocument(doc)}
+                                className="text-blue-600 hover:text-blue-800 text-sm"
+                              >
                                 Download
                               </button>
                             </div>
@@ -774,6 +1019,105 @@ export default function DocumentsPage() {
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                   >
                     Manage Documents
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Document Preview Modal */}
+      {selectedDocument && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  {selectedDocument.extension === 'pdf' ? (
+                    <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  )}
+                  <div>
+                    <h2 className="text-xl font-semibold">{selectedDocument.title}</h2>
+                    <p className="text-sm text-slate-500 mt-1">
+                      {formatFileSize(selectedDocument.size)} • Uploaded {formatDate(selectedDocument.uploadedAt)}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedDocument(null)}
+                  className="text-slate-500 hover:text-slate-700 text-2xl"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-xs text-slate-500 font-medium">Category</div>
+                    <div className="text-sm text-slate-800 mt-1">{selectedDocument.category || "Uncategorized"}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-500 font-medium">Loan Number</div>
+                    <div className="text-sm text-slate-800 mt-1">
+                      {selectedDocument.loanNumber || <span className="text-gray-400 italic">Not assigned</span>}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-500 font-medium">Uploaded By</div>
+                    <div className="text-sm text-slate-800 mt-1">{selectedDocument.uploadedBy || "User"}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-500 font-medium">Version</div>
+                    <div className="text-sm text-slate-800 mt-1">{selectedDocument.version || "1.0"}</div>
+                  </div>
+                </div>
+                
+                {selectedDocument.description && (
+                  <div>
+                    <div className="text-xs text-slate-500 font-medium">Description</div>
+                    <div className="text-sm text-slate-800 mt-1">{selectedDocument.description}</div>
+                  </div>
+                )}
+                
+                {selectedDocument.tags && selectedDocument.tags.length > 0 && (
+                  <div>
+                    <div className="text-xs text-slate-500 font-medium">Tags</div>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {selectedDocument.tags.map((tag, i) => (
+                        <span key={i} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="mt-8 pt-6 border-t">
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setSelectedDocument(null)}
+                    className="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={() => {
+                      downloadDocument(selectedDocument);
+                      setSelectedDocument(null);
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  >
+                    Download File
                   </button>
                 </div>
               </div>

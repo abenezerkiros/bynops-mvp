@@ -7,10 +7,21 @@ import clean from "../assets/clean.svg"
 import star from "../assets/star.svg"
 import warn from "../assets/warn.svg"
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const LeftPanel = ({ title = "Left Panel", backgroundColor = "#2d3748", children, status = "Performing" }) => {
   const { currentUser, userData } = useAuth();
-  
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Failed to log out:', error);
+    }
+  };
   const statusColors = {
     Performing: "#1dbf52",
     Watchlist: "#f5a623",
@@ -49,8 +60,27 @@ const LeftPanel = ({ title = "Left Panel", backgroundColor = "#2d3748", children
               {getUserInitials(userData?.fullName)}
             </div>
             <span>{userData?.fullName || 'User'}</span>
+            <button
+  onClick={handleLogout}
+  className="
+    flex items-center gap-2
+    px-3 py-1.5
+    text-sm font-medium
+    !text-white
+    bg-red-600
+    rounded-md
+    hover:bg-red-700
+    active:bg-red-800
+    transition
+    h-7
+  "
+>
+
+  <span>Logout</span>
+</button>
           </div>
         </div>
+ 
       </header>
 
       <main className="pp-main">

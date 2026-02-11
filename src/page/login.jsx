@@ -29,7 +29,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
       await login(formData.email, formData.password);
-      navigate('/front');
+      navigate('/overview');
     } catch (error) {
       setError(error.message);
     } finally {
