@@ -340,188 +340,185 @@ const RightPanel = ({
   
   return (
     <div>
-      <div className="sidebar">
-        <div className="sidebar-header">
-          <Link to="/overview">     <img src={logo} className="sidebar-logo" alt="" /></Link>
-     
-
-
-        </div>
-
-
-        <div className="report-container">
-          {/* Status Header */}
-          <div className="status-bar" onClick={() => !loading && setOpen(!open)}>
-            <div
-              className="status-dot"
-              style={{ background: statusColors[status] }}
-            />
-            <span>
-              {status} 
-              {loading && ' (Saving...)'}
-            </span>
-            <div className={`chevron ${open ? "chevron-up" : ""} ${loading ? 'disabled' : ''}`}>
-              <img src={chevron} alt="dropdown" />
-            </div>
+    <div className="sidebar">
+      <div className="sidebar-header">
+        <Link to="/overview">     
+          <img src={logo} className="sidebar-logo" alt="" />
+        </Link>
+      </div>
+  
+      <div className="report-container">
+        {/* Status Header */}
+        <div className="status-bar mb-2" onClick={() => !loading && setOpen(!open)}>
+          <div
+            className="status-dot"
+            style={{ background: statusColors[status] }}
+          />
+          <span>
+            {status} 
+            {loading && ' (Saving...)'}
+          </span>
+          <div className={`chevron ${open ? "chevron-up" : ""} ${loading ? 'disabled' : ''}`}>
+            <img src={chevron} alt="dropdown" />
           </div>
-
-          {open && (
-            <div className="dropdown-menu">
-              {statuses.map((s) => (
+        </div>
+  
+        {open && (
+          <div className="dropdown-menu mb-2">
+            {statuses.map((s) => (
+              <div
+                key={s}
+                className={`dropdown-item ${loading ? 'disabled' : ''}`}
+                onClick={() => !loading && handleStatusChange(s)}
+              >
                 <div
-                  key={s}
-                  className={`dropdown-item ${loading ? 'disabled' : ''}`}
-                  onClick={() => !loading && handleStatusChange(s)}
-                >
-                  <div
-                    className="dropdown-dot"
-                    style={{ background: statusColors[s] }}
-                  />
-                  {s}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Loan Selector */}
+                  className="dropdown-dot"
+                  style={{ background: statusColors[s] }}
+                />
+                {s}
+              </div>
+            ))}
+          </div>
+        )}
+  
+        {/* Loan Selector - MOVED INTO GRID */}
+        <div className="report-grid">
+          
+          {/* Loan Selector - Now First Grid Item */}
           {loans.length > 0 && (
-            <div className="loan-selector-section">
-              <div className="section-header-with-actions">
-                <div className="section-subtitle">Select Loan</div>
-              </div>
-              <div className="loan-selector">
-                <select 
-                  value={selectedLoan || ""}
-                  onChange={(e) => onSelectLoan && onSelectLoan(e.target.value)}
-                  className="loan-dropdown"
-                  disabled={loading}
-                >
-                  <option value="">-- Select a loan --</option>
-                  {loans.map((loan) => (
-                    <option key={loan.id || loan.loanNumber} value={loan.id || loan.loanNumber}>
-                      {loan.loanNumber} - {loan.propertyName}
-                      {loan.city && loan.state && ` (${loan.city}, ${loan.state})`}
-                    </option>
-                  ))}
-                </select>
-                
-                {selectedLoanDetails && (
-                  <div className="selected-loan-info">
-                    <div className="loan-info-row">
-                      <span className="info-label">Property:</span>
-                      <span className="info-value">
-                        {selectedLoanDetails.propertyName || "N/A"}
-                      </span>
-                    </div>
-                    <div className="loan-info-row">
-                      <span className="info-label">Loan #:</span>
-                      <span className="info-value font-medium">
-                        {selectedLoanDetails.loanNumber || "N/A"}
-                      </span>
-                    </div>
-                    <div className="loan-info-row">
-                      <span className="info-label">Pool:</span>
-                      <span className="info-value">
-                        {selectedLoanDetails?._rawData?.pool || selectedLoanDetails.poolName || "N/A"}
-                      </span>
-                    </div>
-                    <div className="loan-info-row">
-                      <span className="info-label">Address:</span>
-                      <span className="info-value">
-                        {selectedLoanDetails.propertyAddress || 
-                         `${selectedLoanDetails.address || ""} ${selectedLoanDetails.city || ""} ${selectedLoanDetails.state || ""}`.trim() || 
-                         "N/A"}
-                      </span>
-                    </div>
-                    <div className="loan-info-row">
-                      <span className="info-label">Maturity Date:</span>
-                      <span className="info-value">
-                        {selectedLoanDetails.maturityDate 
-                          ? (() => {
-                              // Handle Excel serial dates and string dates
-                              let date = null;
-                              if (typeof selectedLoanDetails.maturityDate === 'number' && 
-                                  selectedLoanDetails.maturityDate > 30000 && 
-                                  selectedLoanDetails.maturityDate < 60000) {
-                                // Excel serial date
-                                date = new Date(1900, 0, selectedLoanDetails.maturityDate - 1);
-                              } else {
-                                date = new Date(selectedLoanDetails.maturityDate);
+            <div className="grid-item">
+              <div className="card">
+                <div className="section-header">Loan Selection</div>
+                <div className="loan-selector">
+                  <select 
+                    value={selectedLoan || ""}
+                    onChange={(e) => onSelectLoan && onSelectLoan(e.target.value)}
+                    className="loan-dropdown"
+                    disabled={loading}
+                  >
+                    <option value="">-- Select a loan --</option>
+                    {loans.map((loan) => (
+                      <option key={loan.id || loan.loanNumber} value={loan.id || loan.loanNumber}>
+                        {loan.loanNumber} - {loan.propertyName}
+                        {loan.city && loan.state && ` (${loan.city}, ${loan.state})`}
+                      </option>
+                    ))}
+                  </select>
+                  
+                  {selectedLoanDetails && (
+                    <div className="selected-loan-info">
+                      <div className="loan-info-row">
+                        <span className="info-label">Property:</span>
+                        <span className="info-value">
+                          {selectedLoanDetails.propertyName || "N/A"}
+                        </span>
+                      </div>
+                      <div className="loan-info-row">
+                        <span className="info-label">Loan #:</span>
+                        <span className="info-value font-medium">
+                          {selectedLoanDetails.loanNumber || "N/A"}
+                        </span>
+                      </div>
+                      <div className="loan-info-row">
+                        <span className="info-label">Pool:</span>
+                        <span className="info-value">
+                          {selectedLoanDetails?._rawData?.pool || selectedLoanDetails.poolName || "N/A"}
+                        </span>
+                      </div>
+                      <div className="loan-info-row">
+                        <span className="info-label">Address:</span>
+                        <span className="info-value">
+                          {selectedLoanDetails.propertyAddress || 
+                           `${selectedLoanDetails.address || ""} ${selectedLoanDetails.city || ""} ${selectedLoanDetails.state || ""}`.trim() || 
+                           "N/A"}
+                        </span>
+                      </div>
+                      <div className="loan-info-row">
+                        <span className="info-label">Maturity Date:</span>
+                        <span className="info-value">
+                          {selectedLoanDetails.maturityDate 
+                            ? (() => {
+                                let date = null;
+                                if (typeof selectedLoanDetails.maturityDate === 'number' && 
+                                    selectedLoanDetails.maturityDate > 30000 && 
+                                    selectedLoanDetails.maturityDate < 60000) {
+                                  date = new Date(1900, 0, selectedLoanDetails.maturityDate - 1);
+                                } else {
+                                  date = new Date(selectedLoanDetails.maturityDate);
+                                }
+                                return !isNaN(date.getTime()) 
+                                  ? date.toLocaleDateString('en-US', { 
+                                      year: 'numeric', 
+                                      month: 'short', 
+                                      day: 'numeric' 
+                                    })
+                                  : String(selectedLoanDetails.maturityDate);
+                              })()
+                            : "N/A"}
+                        </span>
+                      </div>
+                      <div className="loan-info-row">
+                        <span className="info-label">Interest Rate:</span>
+                        <span className="info-value">
+                          {selectedLoanDetails.interestRate 
+                            ? (() => {
+                                if (typeof selectedLoanDetails.interestRate === 'string' && 
+                                    selectedLoanDetails.interestRate.includes('%')) {
+                                  return selectedLoanDetails.interestRate;
+                                }
+                                const rate = Number(selectedLoanDetails.interestRate);
+                                return !isNaN(rate) 
+                                  ? `${rate.toFixed(2)}%`
+                                  : String(selectedLoanDetails.interestRate);
+                              })()
+                            : "N/A"}
+                        </span>
+                      </div>
+                      <div className="loan-info-row">
+                        <span className="info-label">Type:</span>
+                        <span className="info-value">
+                          {selectedLoanDetails.propertyType || 
+                           selectedLoanDetails.type || 
+                           selectedLoanDetails.loanType || 
+                           "N/A"}
+                        </span>
+                      </div>
+                      <div className="loan-info-row">
+                        <span className="info-label">Unit/SqFt:</span>
+                        <span className="info-value">
+                          {selectedLoanDetails?._rawData?.units_sqft}
+                        </span>
+                      </div>
+                      {/* Add Sponsor Name Row with Hover Card */}
+                      <div className="loan-info-row sponsor-row">
+                        <span className="info-label">Sponsor:</span>
+                        <span 
+                          ref={sponsorNameRef}
+                          className="info-value sponsor-name"
+                          onMouseEnter={() => setShowSponsorCard(true)}
+                          onMouseLeave={() => {
+                            setTimeout(() => {
+                              if (!sponsorCardRef.current?.matches(':hover')) {
+                                setShowSponsorCard(false);
                               }
-                              return !isNaN(date.getTime()) 
-                                ? date.toLocaleDateString('en-US', { 
-                                    year: 'numeric', 
-                                    month: 'short', 
-                                    day: 'numeric' 
-                                  })
-                                : String(selectedLoanDetails.maturityDate);
-                            })()
-                          : "N/A"}
-                      </span>
+                            }, 100);
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowSponsorCard(!showSponsorCard);
+                          }}
+                        >
+                          {sponsorName}
+                          <span style={{ marginLeft: '4px', fontSize: '12px' }}>ⓘ</span>
+                        </span>
+                      </div>
                     </div>
-                    <div className="loan-info-row">
-                      <span className="info-label">Interest Rate:</span>
-                      <span className="info-value">
-                        {selectedLoanDetails.interestRate 
-                          ? (() => {
-                              // If it's already formatted with %, return as is
-                              if (typeof selectedLoanDetails.interestRate === 'string' && 
-                                  selectedLoanDetails.interestRate.includes('%')) {
-                                return selectedLoanDetails.interestRate;
-                              }
-                              const rate = Number(selectedLoanDetails.interestRate);
-                              return !isNaN(rate) 
-                                ? `${rate.toFixed(2)}%`
-                                : String(selectedLoanDetails.interestRate);
-                            })()
-                          : "N/A"}
-                      </span>
-                    </div>
-                    <div className="loan-info-row">
-                      <span className="info-label">Type:</span>
-                      <span className="info-value">
-                        {selectedLoanDetails.propertyType || 
-                         selectedLoanDetails.type || 
-                         selectedLoanDetails.loanType || 
-                         "N/A"}
-                      </span>
-                    </div>
-                    <div className="loan-info-row">
-                      <span className="info-label">Unit/SqFt:</span>
-                      <span className="info-value">
-                        {selectedLoanDetails?._rawData?.units_sqft}
-                      </span>
-                    </div>
-                    {/* Add Sponsor Name Row with Hover Card */}
-                    <div className="loan-info-row sponsor-row">
-                      <span className="info-label">Sponsor:</span>
-                      <span 
-                        ref={sponsorNameRef}
-                        className="info-value sponsor-name"
-                        onMouseEnter={() => setShowSponsorCard(true)}
-                        onMouseLeave={() => {
-                          // Small delay to allow moving to the card
-                          setTimeout(() => {
-                            if (!sponsorCardRef.current?.matches(':hover')) {
-                              setShowSponsorCard(false);
-                            }
-                          }, 100);
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowSponsorCard(!showSponsorCard);
-                        }}
-                      >
-                        {sponsorName}
-                        <span style={{ marginLeft: '4px', fontSize: '12px' }}>ⓘ</span>
-                      </span>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           )}
-
+  
           {/* Sponsor Information Card (Floating) */}
           {showSponsorCard && (
             <div 
@@ -539,7 +536,7 @@ const RightPanel = ({
               </div>
             </div>
           )}
-
+  
           {/* Hidden file input */}
           <input
             ref={fileInputRef}
@@ -548,796 +545,746 @@ const RightPanel = ({
             onChange={handleFileUpload}
             style={{ display: 'none' }}
           />
-
-          {/* Main Grid Container */}
-          <div className="report-grid">
-            
-            {/* Top 5 Tenants */}
-           { (selectedLoanDetails?.propertyType!=="Multifamily"&& selectedLoanDetails?.propertyType!=="multifamily") && <div className="grid-item">
-              <div className="card">
-                <div className="section-header">Tenant Data</div>
+  
+          {/* Rest of your grid items - EXACTLY AS THEY WERE */}
+          
+          {/* Top 5 Tenants */}
+          {(selectedLoanDetails?.propertyType!=="Multifamily"&& selectedLoanDetails?.propertyType!=="multifamily") && <div className="grid-item">
+            <div className="card">
+              <div className="section-header">Tenant Data</div>
+              
+              {(() => {
+                // Load tenant data from localStorage
+                const tenantData = JSON.parse(localStorage.getItem("bynops_tenant_data") || "[]");
                 
-                {(() => {
-                  // Load tenant data from localStorage
-                  const tenantData = JSON.parse(localStorage.getItem("bynops_tenant_data") || "[]");
-                  
-                  // Filter for this specific loan
-                  const loanTenantData = tenantData.filter(data => 
-                    data.loanNumber === (selectedLoanDetails?.loanNumber || selectedLoanDetails?._rawData?.loan_number)
-                  );
-                  
-                  if (loanTenantData.length > 0) {
-                    // Get all unique column names from all tenant records
-                    const allColumns = new Set();
-                    loanTenantData.forEach(row => {
-                      Object.keys(row).forEach(key => {
-                        // Filter out metadata fields
-                        if (!['loanNumber', 'propertyName', 'uploadedAt', 'fileName', 'fileSize'].includes(key)) {
-                          allColumns.add(key);
-                        }
-                      });
+                // Filter for this specific loan
+                const loanTenantData = tenantData.filter(data => 
+                  data.loanNumber === (selectedLoanDetails?.loanNumber || selectedLoanDetails?._rawData?.loan_number)
+                );
+                
+                if (loanTenantData.length > 0) {
+                  // Get all unique column names from all tenant records
+                  const allColumns = new Set();
+                  loanTenantData.forEach(row => {
+                    Object.keys(row).forEach(key => {
+                      // Filter out metadata fields
+                      if (!['loanNumber', 'propertyName', 'uploadedAt', 'fileName', 'fileSize'].includes(key)) {
+                        allColumns.add(key);
+                      }
                     });
-                    
-                    const columns = Array.from(allColumns);
-                    
-                    return (
-                      <>
-                        <div className="flex justify-between items-center mb-4">
-                          <div>
-                            <h3 className="text-sm font-medium text-slate-900">Tenant Roll</h3>
-                            <p className="text-xs text-slate-500 mt-1">
-                              {loanTenantData.length} tenants • {loanTenantData[0]?.fileName}
-                            </p>
-                          </div>
-                          <span className="text-xs text-slate-500">
-                            Uploaded: {formatDate(loanTenantData[0]?.uploadedAt)}
-                          </span>
-                        </div>
-                        
-                        <div className="overflow-x-auto rounded-lg border">
-                          <table className="w-full text-xs">
-                            <thead className="bg-slate-50">
-                              <tr>
-                                {columns.map(column => (
-                                  <th 
-                                    key={column} 
-                                    className="text-left px-4 py-2 text-slate-600 font-medium whitespace-nowrap border-r"
-                                  >
-                                    {column}
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                              {loanTenantData.map((row, index) => (
-                                <tr 
-                                  key={index} 
-                                  className={`hover:bg-slate-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}
-                                >
-                                  {columns.map(column => (
-                                    <td 
-                                      key={column} 
-                                      className="px-4 py-2 text-slate-700 whitespace-nowrap border-r"
-                                    >
-                                      {row[column] || ''}
-                                    </td>
-                                  ))}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </>
-                    );
-                  } else {
-                    return (
-                      <div className="text-center py-8">
-                        <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-1.205a6 6 0 01-7.743 5.197" />
-                        </svg>
-                        <p className="text-sm text-slate-500 mb-2">No tenant data for this loan</p>
-                      </div>
-                    );
-                  }
-                })()}
-              </div>
-            </div>}
-
-            {/* UW Table - FIXED */}
-       {/* UW Table - Rebuilt for "2022 NOI", "2023 NOI" pattern */}
-       <div className="grid-item">
-  <div className="card">
-    <table className="table uw-table">
-      <thead>
-        <tr>
-          <th>UW</th>
-          <th>12/31/2022</th>
-          <th>12/31/2023</th>
-          <th>12/31/2024</th>
-          <th>12/31/2025</th>
-        </tr>
-      </thead>
-      <tbody>
-        {/* EGI - looks for "2022 EGI", "2023 EGI", etc. */}
-        <tr>
-          <td>EGI</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2022 EGI"] || 
-            selectedLoanDetails?._rawData?.["2022_EGI"] ||
-            selectedLoanDetails?._rawData?.["2022_egi"] ||
-            selectedLoanDetails?._rawData?.egi_2022 ||
-            selectedLoanDetails?._rawData?.egi || 
-            null
-          )}</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2023 EGI"] || 
-            selectedLoanDetails?._rawData?.["2023_EGI"] ||
-            selectedLoanDetails?._rawData?.["2023_egi"] ||
-            selectedLoanDetails?._rawData?.egi_2023 ||
-            null
-          )}</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2024 EGI"] || 
-            selectedLoanDetails?._rawData?.["2024_EGI"] ||
-            selectedLoanDetails?._rawData?.["2024_egi"] ||
-            selectedLoanDetails?._rawData?.egi_2024 ||
-            null
-          )}</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2025 EGI"] || 
-            selectedLoanDetails?._rawData?.["2025_EGI"] ||
-            selectedLoanDetails?._rawData?.["2025_egi"] ||
-            selectedLoanDetails?._rawData?.egi_2025 ||
-            null
-          )}</td>
-        </tr>
-        
-        {/* Expenses - looks for "2022 Expenses", "2023 Expenses", etc. */}
-        <tr>
-          <td>Expenses</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2022 Expenses"] || 
-            selectedLoanDetails?._rawData?.["2022_EXPENSES"] ||
-            selectedLoanDetails?._rawData?.["2022_expenses"] ||
-            selectedLoanDetails?._rawData?.expenses_2022 ||
-            selectedLoanDetails?._rawData?.expenses || 
-            null
-          )}</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2023 Expenses"] || 
-            selectedLoanDetails?._rawData?.["2023_EXPENSES"] ||
-            selectedLoanDetails?._rawData?.["2023_expenses"] ||
-            selectedLoanDetails?._rawData?.expenses_2023 ||
-            null
-          )}</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2024 Expenses"] || 
-            selectedLoanDetails?._rawData?.["2024_EXPENSES"] ||
-            selectedLoanDetails?._rawData?.["2024_expenses"] ||
-            selectedLoanDetails?._rawData?.expenses_2024 ||
-            null
-          )}</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2025 Expenses"] || 
-            selectedLoanDetails?._rawData?.["2025_EXPENSES"] ||
-            selectedLoanDetails?._rawData?.["2025_expenses"] ||
-            selectedLoanDetails?._rawData?.expenses_2025 ||
-            null
-          )}</td>
-        </tr>
-        
-        {/* NOI - looks for "2022 NOI", "2023 NOI", etc. */}
-        <tr>
-          <td>NOI</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2022 NOI"] || 
-            selectedLoanDetails?._rawData?.["2022_NOI"] ||
-            selectedLoanDetails?._rawData?.["2022_noi"] ||
-            selectedLoanDetails?._rawData?.noi_2022 ||
-            selectedLoanDetails?._rawData?.noi || 
-            null
-          )}</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2023 NOI"] || 
-            selectedLoanDetails?._rawData?.["2023_NOI"] ||
-            selectedLoanDetails?._rawData?.["2023_noi"] ||
-            selectedLoanDetails?._rawData?.noi_2023 ||
-            null
-          )}</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2024 NOI"] || 
-            selectedLoanDetails?._rawData?.["2024_NOI"] ||
-            selectedLoanDetails?._rawData?.["2024_noi"] ||
-            selectedLoanDetails?._rawData?.noi_2024 ||
-            null
-          )}</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2025 NOI"] || 
-            selectedLoanDetails?._rawData?.["2025_NOI"] ||
-            selectedLoanDetails?._rawData?.["2025_noi"] ||
-            selectedLoanDetails?._rawData?.noi_2025 ||
-            null
-          )}</td>
-        </tr>
-        
-        {/* Debt Service - looks for "2022 Debt Service", "2023 Debt Service", etc. */}
-        <tr>
-          <td>Debt Service</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2022 Debt Service"] || 
-            selectedLoanDetails?._rawData?.["2022_DEBT_SERVICE"] ||
-            selectedLoanDetails?._rawData?.["2022_debt_service"] ||
-            selectedLoanDetails?._rawData?.debt_service_2022 ||
-            selectedLoanDetails?._rawData?.debt_service || 
-            selectedLoanDetails?._rawData?.annual_debt_service ||
-            null
-          )}</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2023 Debt Service"] || 
-            selectedLoanDetails?._rawData?.["2023_DEBT_SERVICE"] ||
-            selectedLoanDetails?._rawData?.["2023_debt_service"] ||
-            selectedLoanDetails?._rawData?.debt_service_2023 ||
-            null
-          )}</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2024 Debt Service"] || 
-            selectedLoanDetails?._rawData?.["2024_DEBT_SERVICE"] ||
-            selectedLoanDetails?._rawData?.["2024_debt_service"] ||
-            selectedLoanDetails?._rawData?.debt_service_2024 ||
-            null
-          )}</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2025 Debt Service"] || 
-            selectedLoanDetails?._rawData?.["2025_DEBT_SERVICE"] ||
-            selectedLoanDetails?._rawData?.["2025_debt_service"] ||
-            selectedLoanDetails?._rawData?.debt_service_2025 ||
-            null
-          )}</td>
-        </tr>
-        
-        {/* NOI DSCR - looks for "2022 DSCR", "2023 DSCR", etc. */}
-        <tr>
-          <td>NOI DSCR</td>
-          <td>{formatRatio(
-            selectedLoanDetails?._rawData?.["2022 DSCR"] || 
-            selectedLoanDetails?._rawData?.["2022_DSCR"] ||
-            selectedLoanDetails?._rawData?.["2022_dscr"] ||
-            selectedLoanDetails?._rawData?.dscr_2022 ||
-            selectedLoanDetails?._rawData?.dscr || 
-            selectedLoanDetails?._rawData?.noi_dscr ||
-            null
-          )}</td>
-          <td>{formatRatio(
-            selectedLoanDetails?._rawData?.["2023 DSCR"] || 
-            selectedLoanDetails?._rawData?.["2023_DSCR"] ||
-            selectedLoanDetails?._rawData?.["2023_dscr"] ||
-            selectedLoanDetails?._rawData?.dscr_2023 ||
-            null
-          )}</td>
-          <td>{formatRatio(
-            selectedLoanDetails?._rawData?.["2024 DSCR"] || 
-            selectedLoanDetails?._rawData?.["2024_DSCR"] ||
-            selectedLoanDetails?._rawData?.["2024_dscr"] ||
-            selectedLoanDetails?._rawData?.dscr_2024 ||
-            null
-          )}</td>
-          <td>{formatRatio(
-            selectedLoanDetails?._rawData?.["2025 DSCR"] || 
-            selectedLoanDetails?._rawData?.["2025_DSCR"] ||
-            selectedLoanDetails?._rawData?.["2025_dscr"] ||
-            selectedLoanDetails?._rawData?.dscr_2025 ||
-            null
-          )}</td>
-        </tr>
-        
-        {/* NCF - looks for "2022 NCF", "2023 NCF", etc. */}
-        <tr>
-          <td>NCF</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2022 NCF"] || 
-            selectedLoanDetails?._rawData?.["2022_NCF"] ||
-            selectedLoanDetails?._rawData?.["2022_ncf"] ||
-            selectedLoanDetails?._rawData?.ncf_2022 ||
-            selectedLoanDetails?._rawData?.ncf || 
-            selectedLoanDetails?._rawData?.net_cash_flow ||
-            null
-          )}</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2023 NCF"] || 
-            selectedLoanDetails?._rawData?.["2023_NCF"] ||
-            selectedLoanDetails?._rawData?.["2023_ncf"] ||
-            selectedLoanDetails?._rawData?.ncf_2023 ||
-            null
-          )}</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2024 NCF"] || 
-            selectedLoanDetails?._rawData?.["2024_NCF"] ||
-            selectedLoanDetails?._rawData?.["2024_ncf"] ||
-            selectedLoanDetails?._rawData?.ncf_2024 ||
-            null
-          )}</td>
-          <td>{formatCurrency(
-            selectedLoanDetails?._rawData?.["2025 NCF"] || 
-            selectedLoanDetails?._rawData?.["2025_NCF"] ||
-            selectedLoanDetails?._rawData?.["2025_ncf"] ||
-            selectedLoanDetails?._rawData?.ncf_2025 ||
-            null
-          )}</td>
-        </tr>
-        
-        {/* NCF DSCR - looks for "2022 NCF DSCR", "2023 NCF DSCR", etc. */}
-        <tr>
-          <td>NCF DSCR</td>
-          <td>{formatRatio(
-            selectedLoanDetails?._rawData?.["2022 NCF DSCR"] || 
-            selectedLoanDetails?._rawData?.["2022_NCF_DSCR"] ||
-            selectedLoanDetails?._rawData?.["2022_ncf_dscr"] ||
-            selectedLoanDetails?._rawData?.ncf_dscr_2022 ||
-            selectedLoanDetails?._rawData?.ncf_dscr || 
-            selectedLoanDetails?._rawData?.net_cash_flow_dscr ||
-            null
-          )}</td>
-          <td>{formatRatio(
-            selectedLoanDetails?._rawData?.["2023 NCF DSCR"] || 
-            selectedLoanDetails?._rawData?.["2023_NCF_DSCR"] ||
-            selectedLoanDetails?._rawData?.["2023_ncf_dscr"] ||
-            selectedLoanDetails?._rawData?.ncf_dscr_2023 ||
-            null
-          )}</td>
-          <td>{formatRatio(
-            selectedLoanDetails?._rawData?.["2024 NCF DSCR"] || 
-            selectedLoanDetails?._rawData?.["2024_NCF_DSCR"] ||
-            selectedLoanDetails?._rawData?.["2024_ncf_dscr"] ||
-            selectedLoanDetails?._rawData?.ncf_dscr_2024 ||
-            null
-          )}</td>
-          <td>{formatRatio(
-            selectedLoanDetails?._rawData?.["2025 NCF DSCR"] || 
-            selectedLoanDetails?._rawData?.["2025_NCF_DSCR"] ||
-            selectedLoanDetails?._rawData?.["2025_ncf_dscr"] ||
-            selectedLoanDetails?._rawData?.ncf_dscr_2025 ||
-            null
-          )}</td>
-        </tr>
-        
-        {/* Debt Yield - looks for "2022 Debt Yield", "2023 Debt Yield", etc. */}
-        <tr>
-          <td>Debt Yield</td>
-          <td>{formatPercentage(
-            selectedLoanDetails?._rawData?.["2022 Debt Yield"] || 
-            selectedLoanDetails?._rawData?.["2022_DEBT_YIELD"] ||
-            selectedLoanDetails?._rawData?.["2022_debt_yield"] ||
-            selectedLoanDetails?._rawData?.debt_yield_2022 ||
-            selectedLoanDetails?._rawData?.debt_yield || 
-            null
-          )}</td>
-          <td>{formatPercentage(
-            selectedLoanDetails?._rawData?.["2023 Debt Yield"] || 
-            selectedLoanDetails?._rawData?.["2023_DEBT_YIELD"] ||
-            selectedLoanDetails?._rawData?.["2023_debt_yield"] ||
-            selectedLoanDetails?._rawData?.debt_yield_2023 ||
-            null
-          )}</td>
-          <td>{formatPercentage(
-            selectedLoanDetails?._rawData?.["2024 Debt Yield"] || 
-            selectedLoanDetails?._rawData?.["2024_DEBT_YIELD"] ||
-            selectedLoanDetails?._rawData?.["2024_debt_yield"] ||
-            selectedLoanDetails?._rawData?.debt_yield_2024 ||
-            null
-          )}</td>
-          <td>{formatPercentage(
-            selectedLoanDetails?._rawData?.["2025 Debt Yield"] || 
-            selectedLoanDetails?._rawData?.["2025_DEBT_YIELD"] ||
-            selectedLoanDetails?._rawData?.["2025_debt_yield"] ||
-            selectedLoanDetails?._rawData?.debt_yield_2025 ||
-            null
-          )}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-            {/* DSCR Card */}
-            <div className="grid-item">
-              <div className="card">
-                <div className="dscr-label">DSCR</div>
-                
-                {/* Calculate DSCR from loan data */}
-                {(() => {
-                  const rawData = selectedLoanDetails?._rawData || {};
+                  });
                   
-                  // Try to get DSCR from various field names
-                  let dscrValue = null;
-                  
-                  // Check for DSCR fields (prefer current/latest year)
-                  if (rawData.dscr_2024 !== undefined) dscrValue = Number(rawData.dscr_2024);
-                  else if (rawData.dscr_2023 !== undefined) dscrValue = Number(rawData.dscr_2023);
-                  else if (rawData.dscr_2022 !== undefined) dscrValue = Number(rawData.dscr_2022);
-                  else if (rawData.dscr !== undefined) dscrValue = Number(rawData.dscr);
-                  else if (rawData.noi_dscr !== undefined) dscrValue = Number(rawData.noi_dscr);
-                  else if (rawData.current_dscr !== undefined) dscrValue = Number(rawData.current_dscr);
-                  
-                  // Calculate DSCR from NOI and Debt Service if not directly available
-                  if (!dscrValue && rawData.noi && rawData.annual_debt_service) {
-                    dscrValue = Number(rawData.noi) / Number(rawData.annual_debt_service);
-                  }
-                  
-                  // Default to 1.0 if no data
-                  dscrValue = dscrValue || 1.0;
-                  
-                  // Calculate bar width for visualization
-                  // Normalize: 1.0 = 0%, 1.5+ = 100%
-                  let barWidth = ((dscrValue - 1.0) / 0.5) * 100;
-                  barWidth = Math.min(Math.max(barWidth, 0), 100); // Clamp between 0-100%
-                  
-                  // Determine color based on DSCR value
-                  let barColor = '#ef4444'; // Red for < 1.0
-                  if (dscrValue >= 1.0 && dscrValue < 1.25) barColor = '#f59e0b'; // Orange
-                  else if (dscrValue >= 1.25 && dscrValue < 1.5) barColor = '#10b981'; // Green
-                  else if (dscrValue >= 1.5) barColor = '#059669'; // Dark green
-                  
-                  // Check if DSCR is below trigger threshold (usually 1.25x)
-                  const triggerThreshold = 1.25;
-                  const isTrigger = dscrValue < triggerThreshold;
+                  const columns = Array.from(allColumns);
                   
                   return (
                     <>
-                      <div className="dscr-bar">
-                        <div 
-                          className="bar-fill" 
-                          style={{ 
-                            width: `${barWidth}%`,
-                            backgroundColor: barColor
-                          }}
-                        ></div>
-                      </div>
-                      <div className="dscr-values">
-                        <span className={dscrValue < 1.0 ? 'active' : ''}>1.0</span>
-                        <span className={dscrValue >= 1.0 && dscrValue < 1.25 ? 'active' : ''}>1.25</span>
-                        <span className={dscrValue >= 1.5 ? 'active' : ''}>1.5+</span>
-                      </div>
-                      {isTrigger && (
-                        <div className="trigger-banner">
-                          ⚠ DSCR TRIGGER ({dscrValue.toFixed(2)}x &lt; {triggerThreshold}x)
+                      <div className="flex justify-between items-center mb-4">
+                        <div>
+                          <h3 className="text-sm text-left font-medium text-slate-900">Tenant Roll</h3>
+                          <p className="text-xs text-slate-500 mt-1">
+                            {loanTenantData.length} tenants • {loanTenantData[0]?.fileName}
+                          </p>
                         </div>
-                      )}
-                      <div className="dscr-current-value">
-                        Current: <strong>{dscrValue.toFixed(2)}x</strong>
+                        <span className="text-xs text-slate-500">
+                          Uploaded: {formatDate(loanTenantData[0]?.uploadedAt)}
+                        </span>
+                      </div>
+                      
+                      <div className="overflow-x-auto rounded-lg border">
+                        <table className="w-full text-xs">
+                          <thead className="bg-black">
+                            <tr>
+                              {columns.map(column => (
+                                <th 
+                                  key={column} 
+                                  className="text-left px-4 py-2 text-white font-medium whitespace-nowrap"
+                                >
+                                  {column}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {loanTenantData.map((row, index) => (
+                              <tr 
+                                key={index} 
+                                className={`hover:bg-slate-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}
+                              >
+                                {columns.map(column => (
+                                  <td 
+                                    key={column} 
+                                    className="px-4 py-2 text-slate-700 whitespace-nowrap border-r"
+                                  >
+                                    {row[column] || ''}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </>
                   );
-                })()}
-                
-                {/* Show data source */}
-                <div className="dscr-data-source">
-                  Source: {selectedLoanDetails?._rawData?.dscr_source || 
-                           selectedLoanDetails?._rawData?.dscr_calculation || 
-                           'Calculated from NOI & Debt Service'}
-                </div>
-              </div>
-            </div>
-
-            {/* Cash Management Details */}
-            <div className="grid-item">
-              <div className="card">
-                <div className="details-row">
-                  <span className="details-title">Cash Management:</span>
-                  <span>During a DSCR Trigger Event the Cash Management Period shall be implemented</span>
-                </div>
-                <div className="details-row">
-                  <span className="details-title">DSCR Trigger Event:</span>
-                  <span>Shall be DSCR falling below the threshold of 1.25x</span>
-                </div>
-              </div>
-            </div>
-
-            {/* DSCR Trigger Table */}
-            <div className="grid-item">
-              <div className="card">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>DSCR Trigger Event</th>
-                      <th>Threshold</th>
-                      <th>Triggered</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Event</td><td>1.25x</td><td>No</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Inspection */}
-            <div className="grid-item">
-              <div className="card">
-                <div className="section-header">Inspection</div>
-                
-                {(() => {
-                  // Load inspection data from localStorage
-                  const inspectionData = JSON.parse(localStorage.getItem("bynops_inspection_data") || "[]");
-                  
-                  // Filter for this specific loan
-                  const loanInspectionData = inspectionData.filter(data => 
-                    data.loanNumber === (selectedLoanDetails?.loanNumber || selectedLoanDetails?._rawData?.loan_number)
+                } else {
+                  return (
+                    <div className="text-center py-8">
+                      <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-1.205a6 6 0 01-7.743 5.197" />
+                      </svg>
+                      <p className="text-sm text-slate-500 mb-2">No tenant data for this loan</p>
+                    </div>
                   );
+                }
+              })()}
+            </div>
+          </div>}
+  
+          {/* UW Table */}
+          <div className="grid-item">
+            <div className="card overflow-x-auto">
+              <table className="table uw-table">
+                <thead>
+                  <tr>
+                    <th>UW</th>
+                    <th>12/31/2022</th>
+                    <th>12/31/2023</th>
+                    <th>12/31/2024</th>
+                    <th>12/31/2025</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* EGI */}
+                  <tr>
+                    <td>EGI</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2022 EGI"] || 
+                      selectedLoanDetails?._rawData?.["2022_EGI"] ||
+                      selectedLoanDetails?._rawData?.["2022_egi"] ||
+                      selectedLoanDetails?._rawData?.egi_2022 ||
+                      selectedLoanDetails?._rawData?.egi || 
+                      null
+                    )}</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2023 EGI"] || 
+                      selectedLoanDetails?._rawData?.["2023_EGI"] ||
+                      selectedLoanDetails?._rawData?.["2023_egi"] ||
+                      selectedLoanDetails?._rawData?.egi_2023 ||
+                      null
+                    )}</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2024 EGI"] || 
+                      selectedLoanDetails?._rawData?.["2024_EGI"] ||
+                      selectedLoanDetails?._rawData?.["2024_egi"] ||
+                      selectedLoanDetails?._rawData?.egi_2024 ||
+                      null
+                    )}</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2025 EGI"] || 
+                      selectedLoanDetails?._rawData?.["2025_EGI"] ||
+                      selectedLoanDetails?._rawData?.["2025_egi"] ||
+                      selectedLoanDetails?._rawData?.egi_2025 ||
+                      null
+                    )}</td>
+                  </tr>
                   
-                  // Get the most recent inspection
-                  const latestInspection = loanInspectionData.length > 0 
-                    ? loanInspectionData.reduce((latest, current) => {
-                        const currentDate = new Date(current.uploadedAt || 0);
-                        const latestDate = new Date(latest.uploadedAt || 0);
-                        return currentDate > latestDate ? current : latest;
-                      })
-                    : null;
+                  {/* Expenses */}
+                  <tr>
+                    <td>Expenses</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2022 Expenses"] || 
+                      selectedLoanDetails?._rawData?.["2022_EXPENSES"] ||
+                      selectedLoanDetails?._rawData?.["2022_expenses"] ||
+                      selectedLoanDetails?._rawData?.expenses_2022 ||
+                      selectedLoanDetails?._rawData?.expenses || 
+                      null
+                    )}</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2023 Expenses"] || 
+                      selectedLoanDetails?._rawData?.["2023_EXPENSES"] ||
+                      selectedLoanDetails?._rawData?.["2023_expenses"] ||
+                      selectedLoanDetails?._rawData?.expenses_2023 ||
+                      null
+                    )}</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2024 Expenses"] || 
+                      selectedLoanDetails?._rawData?.["2024_EXPENSES"] ||
+                      selectedLoanDetails?._rawData?.["2024_expenses"] ||
+                      selectedLoanDetails?._rawData?.expenses_2024 ||
+                      null
+                    )}</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2025 Expenses"] || 
+                      selectedLoanDetails?._rawData?.["2025_EXPENSES"] ||
+                      selectedLoanDetails?._rawData?.["2025_expenses"] ||
+                      selectedLoanDetails?._rawData?.expenses_2025 ||
+                      null
+                    )}</td>
+                  </tr>
                   
-                  // Helper function to format Excel serial dates
-                  const formatExcelDate = (excelSerial) => {
-                    if (!excelSerial) return null;
-                    const serial = Number(excelSerial);
-                    if (isNaN(serial)) return null;
-                    if (serial < 1) return null;
-                    
-                    // Excel date system (1900 date system with bug)
-                    const utc_days = Math.floor(serial - 25569);
-                    const utc_value = utc_days * 86400;
-                    const date_info = new Date(utc_value * 1000);
-                    
-                    // Adjust for Excel's leap year bug
-                    const fractional_day = serial - Math.floor(serial) + 0.0000001;
-                    let total_seconds = Math.floor(86400 * fractional_day);
-                    const seconds = total_seconds % 60;
-                    total_seconds -= seconds;
-                    const hours = Math.floor(total_seconds / 3600);
-                    const minutes = Math.floor(total_seconds / 60) % 60;
-                    
-                    date_info.setHours(hours);
-                    date_info.setMinutes(minutes);
-                    date_info.setSeconds(seconds);
-                    
-                    return date_info;
-                  };
+                  {/* NOI */}
+                  <tr>
+                    <td>NOI</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2022 NOI"] || 
+                      selectedLoanDetails?._rawData?.["2022_NOI"] ||
+                      selectedLoanDetails?._rawData?.["2022_noi"] ||
+                      selectedLoanDetails?._rawData?.noi_2022 ||
+                      selectedLoanDetails?._rawData?.noi || 
+                      null
+                    )}</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2023 NOI"] || 
+                      selectedLoanDetails?._rawData?.["2023_NOI"] ||
+                      selectedLoanDetails?._rawData?.["2023_noi"] ||
+                      selectedLoanDetails?._rawData?.noi_2023 ||
+                      null
+                    )}</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2024 NOI"] || 
+                      selectedLoanDetails?._rawData?.["2024_NOI"] ||
+                      selectedLoanDetails?._rawData?.["2024_noi"] ||
+                      selectedLoanDetails?._rawData?.noi_2024 ||
+                      null
+                    )}</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2025 NOI"] || 
+                      selectedLoanDetails?._rawData?.["2025_NOI"] ||
+                      selectedLoanDetails?._rawData?.["2025_noi"] ||
+                      selectedLoanDetails?._rawData?.noi_2025 ||
+                      null
+                    )}</td>
+                  </tr>
                   
-                  if (latestInspection) {
-                    // Extract data from the inspection object
-                    const company = latestInspection["Company "] || latestInspection.company || "Not specified";
-                    const dateValue = latestInspection["Date "] || latestInspection.date || latestInspection.inspectionDate;
-                    const fileName = latestInspection.fileName || "Unknown file";
-                    const inspectionType = latestInspection.inspectionType || latestInspection["Inspection Type"] || "General";
-                    const propertyName = latestInspection.propertyName || selectedLoanDetails?.propertyName || "Unknown Property";
-                    
-                    // Look for grade/rating in various field names
-                    const grade = latestInspection.Grade || latestInspection.grade || 
-                                 latestInspection.Rating || latestInspection.rating || 
-                                 latestInspection.Score || latestInspection.score || "N/A";
-                    
-                    // Look for deferred maintenance
-                    const deferredMaintenance = latestInspection["Deferred Maintenance"] || 
-                                              latestInspection.deferredMaintenance || 
-                                              latestInspection.DM || 
-                                              latestInspection.dm || 
-                                              latestInspection["DM Issues"] || 
-                                              "Unknown";
-                    
-                    // Look for life safety issues
-                    const lifeSafety = latestInspection["Life Safety"] || 
-                                      latestInspection.lifeSafety || 
-                                      latestInspection.LS || 
-                                      latestInspection.ls || 
-                                      latestInspection["LS Issues"] || 
-                                      "Unknown";
-                    
-                    // Look for notes
-                    const notes = latestInspection.Notes || 
-                                 latestInspection.notes || 
-                                 latestInspection.Comments || 
-                                 latestInspection.comments || 
-                                 latestInspection.Findings || 
-                                 latestInspection.findings || 
-                                 latestInspection.Summary || 
-                                 latestInspection.summary;
-                    
-                    // Look for condition
-                    const condition = latestInspection.Condition || 
-                                     latestInspection.condition || 
-                                     latestInspection["Overall Condition"] || 
-                                     latestInspection.overallCondition;
-                    
-                    // Look for issues counts
-                    const majorIssues = latestInspection["Major Issues"] || 
-                                       latestInspection.majorIssues || 
-                                       latestInspection.majorIssuesCount;
-                    
-                    const minorIssues = latestInspection["Minor Issues"] || 
-                                       latestInspection.minorIssues || 
-                                       latestInspection.minorIssuesCount;
-                    
-                    const safetyViolations = latestInspection["Safety Violations"] || 
-                                            latestInspection.safetyViolations || 
-                                            latestInspection["LS Violations"] || 
-                                            latestInspection.lsViolations;
-
-                    console.log(latestInspection)
-                    
-                    return (
-                      <>
-                        <div className="inspect-grid">
-                          {/* Company */}
-                          <div>
-                            <b>Company:</b> {company}
-                          </div>
-                          
-                          {/* Date - using the Excel serial date (45992) */}
-                          <div>
-                            <b>Date:</b> {formatInspectionDate(dateValue)}
-                          </div>
-                          
-                          {/* Grade/Rating/Score */}
-                          <div>
-                            <b>Grade:</b> {grade}
-                          </div>
-                          
-                          {/* Deferred Maintenance */}
-                          <div>
-                            <b>Deferred Maintenance (DM):</b> {
-                              String(deferredMaintenance).toLowerCase() === 'yes' || 
-                              String(deferredMaintenance).toLowerCase() === 'true' ||
-                              deferredMaintenance === true ? 
-                                'Yes' : 
-                              String(deferredMaintenance).toLowerCase() === 'no' || 
-                              String(deferredMaintenance).toLowerCase() === 'false' ||
-                              deferredMaintenance === false ? 
-                                'No' : 
-                              deferredMaintenance
-                            }
-                          </div>
-                          
-                          {/* Life Safety */}
-                          <div>
-                            <b>Life Safety (LS):</b> {
-                              String(lifeSafety).toLowerCase() === 'yes' || 
-                              String(lifeSafety).toLowerCase() === 'true' ||
-                              lifeSafety === true ? 
-                                'Yes' : 
-                              String(lifeSafety).toLowerCase() === 'no' || 
-                              String(lifeSafety).toLowerCase() === 'false' ||
-                              lifeSafety === false ? 
-                                'No' : 
-                              lifeSafety
-                            }
-                          </div>
-                          
-                          {/* Inspection Type */}
-                          <div>
-                            <b>Type:</b> {inspectionType}
-                          </div>
-                          
-                          {/* Overall Condition */}
-                          {condition && (
-                            <div>
-                              <b>Condition:</b> {condition}
-                            </div>
-                          )}
-                          
-                          {/* Property Name */}
-                          <div>
-                            <b>Property:</b> {propertyName}
-                          </div>
+                  {/* Debt Service */}
+                  <tr>
+                    <td>Debt Service</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2022 Debt Service"] || 
+                      selectedLoanDetails?._rawData?.["2022_DEBT_SERVICE"] ||
+                      selectedLoanDetails?._rawData?.["2022_debt_service"] ||
+                      selectedLoanDetails?._rawData?.debt_service_2022 ||
+                      selectedLoanDetails?._rawData?.debt_service || 
+                      selectedLoanDetails?._rawData?.annual_debt_service ||
+                      null
+                    )}</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2023 Debt Service"] || 
+                      selectedLoanDetails?._rawData?.["2023_DEBT_SERVICE"] ||
+                      selectedLoanDetails?._rawData?.["2023_debt_service"] ||
+                      selectedLoanDetails?._rawData?.debt_service_2023 ||
+                      null
+                    )}</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2024 Debt Service"] || 
+                      selectedLoanDetails?._rawData?.["2024_DEBT_SERVICE"] ||
+                      selectedLoanDetails?._rawData?.["2024_debt_service"] ||
+                      selectedLoanDetails?._rawData?.debt_service_2024 ||
+                      null
+                    )}</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2025 Debt Service"] || 
+                      selectedLoanDetails?._rawData?.["2025_DEBT_SERVICE"] ||
+                      selectedLoanDetails?._rawData?.["2025_debt_service"] ||
+                      selectedLoanDetails?._rawData?.debt_service_2025 ||
+                      null
+                    )}</td>
+                  </tr>
+                  
+                  {/* NOI DSCR */}
+                  <tr>
+                    <td>NOI DSCR</td>
+                    <td>{formatRatio(
+                      selectedLoanDetails?._rawData?.["2022 DSCR"] || 
+                      selectedLoanDetails?._rawData?.["2022_DSCR"] ||
+                      selectedLoanDetails?._rawData?.["2022_dscr"] ||
+                      selectedLoanDetails?._rawData?.dscr_2022 ||
+                      selectedLoanDetails?._rawData?.dscr || 
+                      selectedLoanDetails?._rawData?.noi_dscr ||
+                      null
+                    )}</td>
+                    <td>{formatRatio(
+                      selectedLoanDetails?._rawData?.["2023 DSCR"] || 
+                      selectedLoanDetails?._rawData?.["2023_DSCR"] ||
+                      selectedLoanDetails?._rawData?.["2023_dscr"] ||
+                      selectedLoanDetails?._rawData?.dscr_2023 ||
+                      null
+                    )}</td>
+                    <td>{formatRatio(
+                      selectedLoanDetails?._rawData?.["2024 DSCR"] || 
+                      selectedLoanDetails?._rawData?.["2024_DSCR"] ||
+                      selectedLoanDetails?._rawData?.["2024_dscr"] ||
+                      selectedLoanDetails?._rawData?.dscr_2024 ||
+                      null
+                    )}</td>
+                    <td>{formatRatio(
+                      selectedLoanDetails?._rawData?.["2025 DSCR"] || 
+                      selectedLoanDetails?._rawData?.["2025_DSCR"] ||
+                      selectedLoanDetails?._rawData?.["2025_dscr"] ||
+                      selectedLoanDetails?._rawData?.dscr_2025 ||
+                      null
+                    )}</td>
+                  </tr>
+                  
+                  {/* NCF */}
+                  <tr>
+                    <td>NCF</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2022 NCF"] || 
+                      selectedLoanDetails?._rawData?.["2022_NCF"] ||
+                      selectedLoanDetails?._rawData?.["2022_ncf"] ||
+                      selectedLoanDetails?._rawData?.ncf_2022 ||
+                      selectedLoanDetails?._rawData?.ncf || 
+                      selectedLoanDetails?._rawData?.net_cash_flow ||
+                      null
+                    )}</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2023 NCF"] || 
+                      selectedLoanDetails?._rawData?.["2023_NCF"] ||
+                      selectedLoanDetails?._rawData?.["2023_ncf"] ||
+                      selectedLoanDetails?._rawData?.ncf_2023 ||
+                      null
+                    )}</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2024 NCF"] || 
+                      selectedLoanDetails?._rawData?.["2024_NCF"] ||
+                      selectedLoanDetails?._rawData?.["2024_ncf"] ||
+                      selectedLoanDetails?._rawData?.ncf_2024 ||
+                      null
+                    )}</td>
+                    <td>{formatCurrency(
+                      selectedLoanDetails?._rawData?.["2025 NCF"] || 
+                      selectedLoanDetails?._rawData?.["2025_NCF"] ||
+                      selectedLoanDetails?._rawData?.["2025_ncf"] ||
+                      selectedLoanDetails?._rawData?.ncf_2025 ||
+                      null
+                    )}</td>
+                  </tr>
+                  
+                  {/* NCF DSCR */}
+                  <tr>
+                    <td>NCF DSCR</td>
+                    <td>{formatRatio(
+                      selectedLoanDetails?._rawData?.["2022 NCF DSCR"] || 
+                      selectedLoanDetails?._rawData?.["2022_NCF_DSCR"] ||
+                      selectedLoanDetails?._rawData?.["2022_ncf_dscr"] ||
+                      selectedLoanDetails?._rawData?.ncf_dscr_2022 ||
+                      selectedLoanDetails?._rawData?.ncf_dscr || 
+                      selectedLoanDetails?._rawData?.net_cash_flow_dscr ||
+                      null
+                    )}</td>
+                    <td>{formatRatio(
+                      selectedLoanDetails?._rawData?.["2023 NCF DSCR"] || 
+                      selectedLoanDetails?._rawData?.["2023_NCF_DSCR"] ||
+                      selectedLoanDetails?._rawData?.["2023_ncf_dscr"] ||
+                      selectedLoanDetails?._rawData?.ncf_dscr_2023 ||
+                      null
+                    )}</td>
+                    <td>{formatRatio(
+                      selectedLoanDetails?._rawData?.["2024 NCF DSCR"] || 
+                      selectedLoanDetails?._rawData?.["2024_NCF_DSCR"] ||
+                      selectedLoanDetails?._rawData?.["2024_ncf_dscr"] ||
+                      selectedLoanDetails?._rawData?.ncf_dscr_2024 ||
+                      null
+                    )}</td>
+                    <td>{formatRatio(
+                      selectedLoanDetails?._rawData?.["2025 NCF DSCR"] || 
+                      selectedLoanDetails?._rawData?.["2025_NCF_DSCR"] ||
+                      selectedLoanDetails?._rawData?.["2025_ncf_dscr"] ||
+                      selectedLoanDetails?._rawData?.ncf_dscr_2025 ||
+                      null
+                    )}</td>
+                  </tr>
+                  
+                  {/* Debt Yield */}
+                  <tr>
+                    <td>Debt Yield</td>
+                    <td>{formatPercentage(
+                      selectedLoanDetails?._rawData?.["2022 Debt Yield"] || 
+                      selectedLoanDetails?._rawData?.["2022_DEBT_YIELD"] ||
+                      selectedLoanDetails?._rawData?.["2022_debt_yield"] ||
+                      selectedLoanDetails?._rawData?.debt_yield_2022 ||
+                      selectedLoanDetails?._rawData?.debt_yield || 
+                      null
+                    )}</td>
+                    <td>{formatPercentage(
+                      selectedLoanDetails?._rawData?.["2023 Debt Yield"] || 
+                      selectedLoanDetails?._rawData?.["2023_DEBT_YIELD"] ||
+                      selectedLoanDetails?._rawData?.["2023_debt_yield"] ||
+                      selectedLoanDetails?._rawData?.debt_yield_2023 ||
+                      null
+                    )}</td>
+                    <td>{formatPercentage(
+                      selectedLoanDetails?._rawData?.["2024 Debt Yield"] || 
+                      selectedLoanDetails?._rawData?.["2024_DEBT_YIELD"] ||
+                      selectedLoanDetails?._rawData?.["2024_debt_yield"] ||
+                      selectedLoanDetails?._rawData?.debt_yield_2024 ||
+                      null
+                    )}</td>
+                    <td>{formatPercentage(
+                      selectedLoanDetails?._rawData?.["2025 Debt Yield"] || 
+                      selectedLoanDetails?._rawData?.["2025_DEBT_YIELD"] ||
+                      selectedLoanDetails?._rawData?.["2025_debt_yield"] ||
+                      selectedLoanDetails?._rawData?.debt_yield_2025 ||
+                      null
+                    )}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+  
+          {/* DSCR Card */}
+          <div className="grid-item">
+            <div className="card">
+              <div className="dscr-label">DSCR</div>
+              
+              {(() => {
+                const rawData = selectedLoanDetails?._rawData || {};
+                
+                let dscrValue = null;
+                
+                if (rawData.dscr_2024 !== undefined) dscrValue = Number(rawData.dscr_2024);
+                else if (rawData.dscr_2023 !== undefined) dscrValue = Number(rawData.dscr_2023);
+                else if (rawData.dscr_2022 !== undefined) dscrValue = Number(rawData.dscr_2022);
+                else if (rawData.dscr !== undefined) dscrValue = Number(rawData.dscr);
+                else if (rawData.noi_dscr !== undefined) dscrValue = Number(rawData.noi_dscr);
+                else if (rawData.current_dscr !== undefined) dscrValue = Number(rawData.current_dscr);
+                
+                if (!dscrValue && rawData.noi && rawData.annual_debt_service) {
+                  dscrValue = Number(rawData.noi) / Number(rawData.annual_debt_service);
+                }
+                
+                dscrValue = dscrValue || 1.0;
+                
+                let barWidth = ((dscrValue - 1.0) / 0.5) * 100;
+                barWidth = Math.min(Math.max(barWidth, 0), 100);
+                
+                let barColor = '#ef4444';
+                if (dscrValue >= 1.0 && dscrValue < 1.25) barColor = '#f59e0b';
+                else if (dscrValue >= 1.25 && dscrValue < 1.5) barColor = '#10b981';
+                else if (dscrValue >= 1.5) barColor = '#059669';
+                
+                const triggerThreshold = 1.25;
+                const isTrigger = dscrValue < triggerThreshold;
+                
+                return (
+                  <>
+                    <div className="dscr-bar">
+                      <div 
+                        className="bar-fill" 
+                        style={{ 
+                          width: `${barWidth}%`,
+                          backgroundColor: barColor
+                        }}
+                      ></div>
+                    </div>
+                    <div className="dscr-values">
+                      <span className={dscrValue < 1.0 ? 'active' : ''}>1.0</span>
+                      <span className={dscrValue >= 1.0 && dscrValue < 1.25 ? 'active' : ''}>1.25</span>
+                      <span className={dscrValue >= 1.5 ? 'active' : ''}>1.5+</span>
+                    </div>
+                    {isTrigger && (
+                      <div className="trigger-banner">
+                        ⚠ DSCR TRIGGER ({dscrValue.toFixed(2)}x &lt; {triggerThreshold}x)
+                      </div>
+                    )}
+                    <div className="dscr-current-value">
+                      Current: <strong>{dscrValue.toFixed(2)}x</strong>
+                    </div>
+                  </>
+                );
+              })()}
+              
+              <div className="dscr-data-source">
+                Source: {selectedLoanDetails?._rawData?.dscr_source || 
+                         selectedLoanDetails?._rawData?.dscr_calculation || 
+                         'Calculated from NOI & Debt Service'}
+              </div>
+            </div>
+          </div>
+  
+          {/* Cash Management Details */}
+          <div className="grid-item">
+            <div className="card">
+              <div className="details-row">
+                <span className="details-title">Cash Management:</span>
+                <span>During a DSCR Trigger Event the Cash Management Period shall be implemented</span>
+              </div>
+              <div className="details-row">
+                <span className="details-title">DSCR Trigger Event:</span>
+                <span>Shall be DSCR falling below the threshold of 1.25x</span>
+              </div>
+            </div>
+          </div>
+  
+          {/* DSCR Trigger Table */}
+          <div className="grid-item">
+            <div className="card">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>DSCR Trigger Event</th>
+                    <th>Threshold</th>
+                    <th>Triggered</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Event</td><td>1.25x</td><td>No</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+  
+          {/* Inspection */}
+          <div className="grid-item">
+            <div className="card">
+              <div className="section-header">Inspection</div>
+              
+              {(() => {
+                const inspectionData = JSON.parse(localStorage.getItem("bynops_inspection_data") || "[]");
+                
+                const loanInspectionData = inspectionData.filter(data => 
+                  data.loanNumber === (selectedLoanDetails?.loanNumber || selectedLoanDetails?._rawData?.loan_number)
+                );
+                
+                const latestInspection = loanInspectionData.length > 0 
+                  ? loanInspectionData.reduce((latest, current) => {
+                      const currentDate = new Date(current.uploadedAt || 0);
+                      const latestDate = new Date(latest.uploadedAt || 0);
+                      return currentDate > latestDate ? current : latest;
+                    })
+                  : null;
+                
+                const formatExcelDate = (excelSerial) => {
+                  if (!excelSerial) return null;
+                  const serial = Number(excelSerial);
+                  if (isNaN(serial)) return null;
+                  if (serial < 1) return null;
+                  
+                  const utc_days = Math.floor(serial - 25569);
+                  const utc_value = utc_days * 86400;
+                  const date_info = new Date(utc_value * 1000);
+                  
+                  const fractional_day = serial - Math.floor(serial) + 0.0000001;
+                  let total_seconds = Math.floor(86400 * fractional_day);
+                  const seconds = total_seconds % 60;
+                  total_seconds -= seconds;
+                  const hours = Math.floor(total_seconds / 3600);
+                  const minutes = Math.floor(total_seconds / 60) % 60;
+                  
+                  date_info.setHours(hours);
+                  date_info.setMinutes(minutes);
+                  date_info.setSeconds(seconds);
+                  
+                  return date_info;
+                };
+                
+                if (latestInspection) {
+                  const company = latestInspection["Company "] || latestInspection.company || "Not specified";
+                  const dateValue = latestInspection["Date "] || latestInspection.date || latestInspection.inspectionDate;
+                  const fileName = latestInspection.fileName || "Unknown file";
+                  const inspectionType = latestInspection.inspectionType || latestInspection["Inspection Type"] || "General";
+                  const propertyName = latestInspection.propertyName || selectedLoanDetails?.propertyName || "Unknown Property";
+                  
+                  const grade = latestInspection.Grade || latestInspection.grade || 
+                               latestInspection.Rating || latestInspection.rating || 
+                               latestInspection.Score || latestInspection.score || "N/A";
+                  
+                  const deferredMaintenance = latestInspection["Deferred Maintenance"] || 
+                                            latestInspection.deferredMaintenance || 
+                                            latestInspection.DM || 
+                                            latestInspection.dm || 
+                                            latestInspection["DM Issues"] || 
+                                            "Unknown";
+                  
+                  const lifeSafety = latestInspection["Life Safety"] || 
+                                    latestInspection.lifeSafety || 
+                                    latestInspection.LS || 
+                                    latestInspection.ls || 
+                                    latestInspection["LS Issues"] || 
+                                    "Unknown";
+                  
+                  const notes = latestInspection.Notes || 
+                               latestInspection.notes || 
+                               latestInspection.Comments || 
+                               latestInspection.comments || 
+                               latestInspection.Findings || 
+                               latestInspection.findings || 
+                               latestInspection.Summary || 
+                               latestInspection.summary;
+                  
+                  const condition = latestInspection.Condition || 
+                                   latestInspection.condition || 
+                                   latestInspection["Overall Condition"] || 
+                                   latestInspection.overallCondition;
+                  
+                  const majorIssues = latestInspection["Major Issues"] || 
+                                     latestInspection.majorIssues || 
+                                     latestInspection.majorIssuesCount;
+                  
+                  const minorIssues = latestInspection["Minor Issues"] || 
+                                     latestInspection.minorIssues || 
+                                     latestInspection.minorIssuesCount;
+                  
+                  const safetyViolations = latestInspection["Safety Violations"] || 
+                                          latestInspection.safetyViolations || 
+                                          latestInspection["LS Violations"] || 
+                                          latestInspection.lsViolations;
+  
+                  console.log(latestInspection)
+                  
+                  return (
+                    <>
+                      <div className="inspect-grid">
+                        <div>
+                          <b>Company:</b> {company}
                         </div>
-                        
-                        {/* Inspection Notes */}
-                        {notes && (
-                          <div className="inspection-notes">
-                            <b>Notes:</b> {notes}
+                        <div>
+                          <b>Date:</b> {formatInspectionDate(dateValue)}
+                        </div>
+                        <div>
+                          <b>Grade:</b> {grade}
+                        </div>
+                        <div>
+                          <b>Deferred Maintenance (DM):</b> {
+                            String(deferredMaintenance).toLowerCase() === 'yes' || 
+                            String(deferredMaintenance).toLowerCase() === 'true' ||
+                            deferredMaintenance === true ? 
+                              'Yes' : 
+                            String(deferredMaintenance).toLowerCase() === 'no' || 
+                            String(deferredMaintenance).toLowerCase() === 'false' ||
+                            deferredMaintenance === false ? 
+                              'No' : 
+                            deferredMaintenance
+                          }
+                        </div>
+                        <div>
+                          <b>Life Safety (LS):</b> {
+                            String(lifeSafety).toLowerCase() === 'yes' || 
+                            String(lifeSafety).toLowerCase() === 'true' ||
+                            lifeSafety === true ? 
+                              'Yes' : 
+                            String(lifeSafety).toLowerCase() === 'no' || 
+                            String(lifeSafety).toLowerCase() === 'false' ||
+                            lifeSafety === false ? 
+                              'No' : 
+                            lifeSafety
+                          }
+                        </div>
+                        <div>
+                          <b>Type:</b> {inspectionType}
+                        </div>
+                        {condition && (
+                          <div>
+                            <b>Condition:</b> {condition}
                           </div>
                         )}
-                        
-                        {/* Attachments */}
-                        <div className="attachments">
-                          <span className="attachment-icon">📄</span>
-                          <span className="attachment-name">{fileName}</span>
-                          <span className="attachment-size">
-                            ({formatFileSize(latestInspection.fileSize || 0)})
-                          </span>
-                          {latestInspection.uploadedAt && (
-                            <span className="attachment-date">
-                              • Uploaded: {formatInspectionDate(latestInspection.uploadedAt)}
-                            </span>
-                          )}
-                        </div>
-                        
-                        {/* Multiple inspections warning */}
-                        {loanInspectionData.length > 1 && (
-                          <div className="multiple-inspections">
-                            <span className="warning-icon">⚠</span>
-                            {loanInspectionData.length} inspections found. Showing most recent.
-                            <button 
-                              className="view-all-btn"
-                              onClick={() => {
-                                // Navigate to documents page for this loan
-                                localStorage.setItem("current_loan_documents", JSON.stringify(selectedLoanDetails));
-                                window.location.href = `/loan-documents?loan=${encodeURIComponent(selectedLoanDetails?.loanNumber || '')}`;
-                              }}
-                            >
-                              View All
-                            </button>
-                          </div>
-                        )}
-                        
-                        {/* Inspection Findings Summary */}
-                        {(majorIssues || minorIssues || safetyViolations || condition) && (
-                          <div className="inspection-findings">
-                            <h4 className="findings-header">Key Findings:</h4>
-                            <div className="findings-grid">
-                              {/* Major Issues */}
-                              {majorIssues && parseInt(majorIssues) > 0 && (
-                                <div className="finding-item finding-major">
-                                  <span className="finding-count">{majorIssues}</span>
-                                  <span className="finding-label">Major Issues</span>
-                                </div>
-                              )}
-                              
-                              {/* Minor Issues */}
-                              {minorIssues && parseInt(minorIssues) > 0 && (
-                                <div className="finding-item finding-minor">
-                                  <span className="finding-count">{minorIssues}</span>
-                                  <span className="finding-label">Minor Issues</span>
-                                </div>
-                              )}
-                              
-                              {/* Safety Violations */}
-                              {safetyViolations && parseInt(safetyViolations) > 0 && (
-                                <div className="finding-item finding-safety">
-                                  <span className="finding-count">{safetyViolations}</span>
-                                  <span className="finding-label">Safety Violations</span>
-                                </div>
-                              )}
-                              
-                              {/* Overall Condition */}
-                              {condition && (
-                                <div className="finding-item finding-condition">
-                                  <span className="finding-label">Condition:</span>
-                                  <span className="finding-value">{condition}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </>
-                    );
-                  } else {
-                    // No inspection data available
-                    return (
-                      <div className="no-inspection-data">
-                        <div className="inspect-grid">
-                          <div><b>Company:</b> No inspection data</div>
-                          <div><b>Date:</b> N/A</div>
-                          <div><b>Grade:</b> N/A</div>
-                          <div><b>Deferred Maintenance (DM):</b> Unknown</div>
-                          <div><b>Life Safety (LS):</b> Unknown</div>
-                          <div><b>Type:</b> N/A</div>
-                        </div>
-                        <div className="inspection-notes">
-                          <b>Notes:</b> Upload inspection data in the Documents section
-                        </div>
-                        <div className="upload-prompt">
-                          Go to Documents to upload inspection data 
+                        <div>
+                          <b>Property:</b> {propertyName}
                         </div>
                       </div>
-                    );
-                  }
-                })()}
-              </div>
+                      
+                      {notes && (
+                        <div className="inspection-notes">
+                          <b>Notes:</b> {notes}
+                        </div>
+                      )}
+                      
+                      <div className="attachments">
+                        <span className="attachment-icon">📄</span>
+                        <span className="attachment-name">{fileName}</span>
+                        <span className="attachment-size">
+                          ({formatFileSize(latestInspection.fileSize || 0)})
+                        </span>
+                        {latestInspection.uploadedAt && (
+                          <span className="attachment-date">
+                            • Uploaded: {formatInspectionDate(latestInspection.uploadedAt)}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {loanInspectionData.length > 1 && (
+                        <div className="multiple-inspections">
+                          <span className="warning-icon">⚠</span>
+                          {loanInspectionData.length} inspections found. Showing most recent.
+                          <button 
+                            className="view-all-btn"
+                            onClick={() => {
+                              localStorage.setItem("current_loan_documents", JSON.stringify(selectedLoanDetails));
+                              window.location.href = `/loan-documents?loan=${encodeURIComponent(selectedLoanDetails?.loanNumber || '')}`;
+                            }}
+                          >
+                            View All
+                          </button>
+                        </div>
+                      )}
+                      
+                      {(majorIssues || minorIssues || safetyViolations || condition) && (
+                        <div className="inspection-findings">
+                          <h4 className="findings-header">Key Findings:</h4>
+                          <div className="findings-grid">
+                            {majorIssues && parseInt(majorIssues) > 0 && (
+                              <div className="finding-item finding-major">
+                                <span className="finding-count">{majorIssues}</span>
+                                <span className="finding-label">Major Issues</span>
+                              </div>
+                            )}
+                            
+                            {minorIssues && parseInt(minorIssues) > 0 && (
+                              <div className="finding-item finding-minor">
+                                <span className="finding-count">{minorIssues}</span>
+                                <span className="finding-label">Minor Issues</span>
+                              </div>
+                            )}
+                            
+                            {safetyViolations && parseInt(safetyViolations) > 0 && (
+                              <div className="finding-item finding-safety">
+                                <span className="finding-count">{safetyViolations}</span>
+                                <span className="finding-label">Safety Violations</span>
+                              </div>
+                            )}
+                            
+                            {condition && (
+                              <div className="finding-item finding-condition">
+                                <span className="finding-label">Condition:</span>
+                                <span className="finding-value">{condition}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                } else {
+                  return (
+                    <div className="no-inspection-data">
+                      <div className="inspect-grid">
+                        <div><b>Company:</b> No inspection data</div>
+                        <div><b>Date:</b> N/A</div>
+                        <div><b>Grade:</b> N/A</div>
+                        <div><b>Deferred Maintenance (DM):</b> Unknown</div>
+                        <div><b>Life Safety (LS):</b> Unknown</div>
+                        <div><b>Type:</b> N/A</div>
+                      </div>
+                      <div className="inspection-notes">
+                        <b>Notes:</b> Upload inspection data in the Documents section
+                      </div>
+                      <div className="upload-prompt">
+                        Go to Documents to upload inspection data 
+                      </div>
+                    </div>
+                  );
+                }
+              })()}
             </div>
-
           </div>
+  
         </div>
       </div>
     </div>
+  </div>
   );
 };
 

@@ -4,7 +4,6 @@ import logo from "../assets/BynopsLogo.png";
 const items = [
   { href: "/overview", label: "Overview" },
   { href: "/loans", label: "Loans" },
-  { href: "/tasks", label: "Tasks" },
   { href: "/documents", label: "Documents" },
 ];
 import { useAuth } from '../context/AuthContext';
@@ -92,10 +91,11 @@ export default function Sidebar() {
     flex items-center gap-2
     px-3 py-1.5
     text-sm font-medium
-    !text-white
-    bg-red-600
+    !text-black
+
     rounded-md
     hover:bg-red-700
+    hover:!text-white
     active:bg-red-800
     transition
     h-7

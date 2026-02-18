@@ -57,9 +57,9 @@ export default function LoginPage() {
         <div className="signup-overlay"></div>
         <div className="signup-left-content">
           <h1>
-            Welcome Back to <br /> BYNOPS
+          Welcome back!
           </h1>
-          <p>Continue your journey with structured understanding</p>
+          <p>Login to continue turning knowledge into structured understanding</p>
         </div>
       </div>
 
@@ -69,8 +69,8 @@ export default function LoginPage() {
           <div className="signup-logo">
             <img src={logo} alt="BYNOPS" />
           </div>
-          <h2>User Login</h2>
-          <p>Sign in to your account</p>
+          <h2>Sign in</h2>
+          <p>Sign in or create an account below</p>
 
           {error && <div className="error-message">{error}</div>}
 

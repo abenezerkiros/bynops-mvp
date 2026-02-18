@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import ChatPanel from "./chatMain";
 import Sidebar from "../page/sidenav";
+import { useAuth } from '../context/AuthContext';
 
 // Mock UI components - replace with your actual components
 const Card = ({ children, className }) => <div className={`card ${className}`}>{children}</div>;
@@ -230,7 +231,15 @@ export default function DashboardPage() {
     }
     return String(status).toLowerCase();
   };
-
+  const getUserInitials = (fullName) => {
+    if (!fullName) return 'U';
+    return fullName
+      .split(' ')
+      .map(name => name.charAt(0).toUpperCase())
+      .join('')
+      .slice(0, 2);
+  };
+  const {  userData } = useAuth();
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
@@ -238,7 +247,9 @@ export default function DashboardPage() {
       
       {/* Main content area - adjusted for sidebar width */}
       <div className="flex-1 ml-0 lg:ml-64 transition-all duration-300">
+   
         <div className="p-4 lg:p-8 w-full">
+
           {/* Two-pane layout on lg+; stacked on mobile */}
           <div
             ref={containerRef}
@@ -249,7 +260,7 @@ export default function DashboardPage() {
             <div className="space-y-6 lg:space-y-8 min-w-0 flex-1" style={leftStyle}>
               {/* Header */}
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="flex-1">
+                <div className="flex-1 text-left">
                   <h1 className="text-2xl lg:text-3xl font-semibold text-slate-900">
                     Portfolio Overview
                   </h1>
@@ -272,10 +283,11 @@ export default function DashboardPage() {
                         window.location.reload();
                       }
                     }}
-                    className="text-xs font-medium text-red-500 hover:text-red-600 hover:underline w-full sm:w-auto text-left sm:text-center"
+                    className="text-xs font-medium text-gray-500 hover:text-black-600 hover:underline w-full sm:w-auto text-left sm:text-center"
                   >
                     Reset Data
                   </button>
+     
                 </div>
               </div>
 
@@ -405,14 +417,24 @@ export default function DashboardPage() {
 
             {/* RIGHT: AI chat - hidden on small screens unless toggled */}
             {isDesktop && mounted ? (
-              <div
-                className="border rounded-xl lg:rounded-2xl shadow-sm bg-white overflow-hidden flex-shrink-0"
-                style={{ ...rightStyle, minWidth: "280px", maxWidth: "600px" }}
-              >
-                <div className="h-[calc(100vh-8rem)] sticky top-4">
-                  <ChatPanel mode="portfolio" showWelcomeMessage={false} />
-                </div>
-              </div>
+              <>           
+  <div
+    className="border rounded-xl lg:rounded-2xl shadow-sm bg-white overflow-hidden flex-shrink-0"
+    style={{ ...rightStyle, minWidth: "280px", maxWidth: "600px" }}
+  >
+    
+    <div className="h-[calc(100vh-8rem)] sticky top-4">
+      <div className="pp-user flex justify-end items-center gap-2 mx-2 ">
+        <div className="gg-icon">
+          {getUserInitials(userData?.fullName)}
+        </div>
+        <span>{userData?.fullName || 'User'}</span>
+      </div>
+      <ChatPanel mode="portfolio" showWelcomeMessage={false} />
+    </div>
+  </div>
+</>
+        
             ) : (
               <div className="lg:hidden mt-6">
                 <div className="border rounded-xl shadow-sm bg-white overflow-hidden">

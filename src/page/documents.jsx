@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Sidebar from "../page/sidenav";
 import { Link } from "react-router-dom";
-
+import { useAuth } from '../context/AuthContext';
 // Mock functions
 const saveFile = async (file, metadata) => {
   console.log("Saving file:", file.name, metadata);
@@ -55,6 +55,14 @@ const removeDoc = (id) => {
   return true;
 };
 
+const getUserInitials = (fullName) => {
+  if (!fullName) return 'U';
+  return fullName
+    .split(' ')
+    .map(name => name.charAt(0).toUpperCase())
+    .join('')
+    .slice(0, 2);
+};
 const listDocsByLoan = (loanNumber) => {
   const allDocs = JSON.parse(localStorage.getItem("bynops_documents") || "[]");
   return allDocs.filter(doc => doc.loanNumber === loanNumber);
@@ -92,7 +100,6 @@ export default function DocumentsPage() {
     tags: ""
   });
   const [viewMode, setViewMode] = useState("loans"); // "loans" or "documents"
-
   useEffect(() => {
     try {
       // Load loans
@@ -137,6 +144,7 @@ export default function DocumentsPage() {
       console.error("Error loading data:", error);
     }
   }, []);
+  const { userData } = useAuth();
 
   // Search/filter for loans view
   const filteredLoans = useMemo(() => {
@@ -541,7 +549,7 @@ export default function DocumentsPage() {
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-2xl lg:text-3xl font-semibold tracking-tight text-slate-900">
+              <h1 className="text-2xl lg:text-3xl font-semibold tracking-tight text-slate-900 text-left">
                 {viewMode === "loans" ? "Loan Documents" : "All Documents"}
               </h1>
               <p className="text-slate-500 text-sm lg:text-base mt-1">
@@ -560,6 +568,14 @@ export default function DocumentsPage() {
                 </Link>
               </label>
             </div>
+            <div className="pp-right">
+          <div className="pp-user">
+            <div className="gg-icon">
+              {getUserInitials(userData?.fullName)}
+            </div>
+            <span>{userData?.fullName || 'User'}</span>
+          </div>
+        </div>
           </div>
 
           {/* KPI Cards */}

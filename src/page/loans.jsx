@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Sidebar from "../page/sidenav";
-
+import { useAuth } from '../context/AuthContext';
 // Mock UI components
 const Table = ({ children }) => <div className="table-container"><table className="table w-full">{children}</table></div>;
 const TableHeader = ({ children }) => <thead>{children}</thead>;
@@ -134,6 +134,7 @@ const fmtDate = (d) => {
 };
 
 export default function LoansPage() {
+  const {  userData } = useAuth();
   const [q, setQ] = useState("");
   const [rows, setRows] = useState([]);
   const [selectedLoan, setSelectedLoan] = useState(null);
@@ -466,7 +467,14 @@ const navigateToLoanDetail = (loan) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isColumnDropdownOpen]);
-
+  const getUserInitials = (fullName) => {
+    if (!fullName) return 'U';
+    return fullName
+      .split(' ')
+      .map(name => name.charAt(0).toUpperCase())
+      .join('')
+      .slice(0, 2);
+  };
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
@@ -496,6 +504,15 @@ const navigateToLoanDetail = (loan) => {
               >
                 + Import Data
               </button>
+              <div className="pp-right">
+          <div className="pp-user">
+            <div className="gg-icon">
+              {getUserInitials(userData?.fullName)}
+            </div>
+            <span>{userData?.fullName || 'User'}</span>
+          </div>
+        </div>
+ 
             </div>
           </div>
 
@@ -548,6 +565,90 @@ const navigateToLoanDetail = (loan) => {
           </div>
 
           {/* Column Filter - Changed to Dropdown */}
+     
+
+          {/* Loans Table - Shows ALL columns */}
+          <div className="rounded-xl lg:rounded-2xl border bg-white shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-slate-50/60">
+                    <TableHead className="px-4 py-3 text-slate-600 text-xs font-medium whitespace-nowrap sticky left-0 bg-slate-50 z-10">
+                      Row
+                    </TableHead>
+                    {visibleColumns.map((column, index) => (
+                      <TableHead 
+                        key={column} 
+                        className={`px-4 py-3 text-slate-600 text-xs font-medium whitespace-nowrap min-w-[120px] ${
+                          index === 0 ? 'sticky left-12 bg-slate-50 z-10' : ''
+                        }`}
+                        title={column}
+                      >
+                        {getColumnDisplayName(column)}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map((loan, rowIndex) => {
+                    const allData = getAllLoanData(loan);
+                    return (
+                      <TableRow
+                        key={loan.id || loan.loanNumber}
+                        className="border-b hover:bg-slate-50 transition-colors"
+                      >
+                        <TableCell className="px-4 py-3 text-xs text-slate-500 sticky left-0 bg-white z-5">
+                          {rowIndex + 1}
+                        </TableCell>
+                        {visibleColumns.map((column, colIndex) => (
+                          <TableCell 
+                            key={`${loan.id}-${column}`} 
+                            className={`px-4 py-3 text-xs text-slate-700 whitespace-nowrap min-w-[120px] ${
+                              colIndex === 0 ? 'sticky left-12 bg-white z-5' : ''
+                            }`}
+                            title={allData[column] != null ? String(allData[column]) : ''}
+                          >
+                            {colIndex === 0 ? (
+                              <button
+                                onClick={() => navigateToLoanDetail(loan)}
+                                className="text-blue-600 hover:text-blue-800 hover:underline text-left w-full text-start"
+                              >
+                                {formatCellValue(loan, column)}
+                              </button>
+                            ) : (
+                              formatCellValue(loan, column)
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    );
+                  })}
+
+                </TableBody>
+              </Table>
+
+{filtered.length === 0 && (
+  <TableRow>
+    <TableCell colSpan={visibleColumns.length + 1} 
+      className="px-4 lg:px-6 py-12 text-center text-slate-500 text-sm w-full">
+      {rows.length === 0 ? (
+        <div>
+          No loans found.{" "}
+          <button
+            onClick={navigateToImport}
+            className="text-blue-600 hover:text-blue-800 underline"
+          >
+            Import your first data file
+          </button>
+        </div>
+      ) : (
+        <div className="w-full">No loans match your search.{" "}Try a different search term.</div>
+      )}
+    </TableCell>
+  </TableRow>
+)}
+            </div>
+          </div>
           <div className="mb-4 p-4 bg-slate-50 rounded-lg column-dropdown relative">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-slate-900">Visible Columns ({visibleColumns.length} of {allColumns.length})</h3>
@@ -621,89 +722,6 @@ const navigateToLoanDetail = (loan) => {
               </div>
             )}
           </div>
-
-          {/* Loans Table - Shows ALL columns */}
-          <div className="rounded-xl lg:rounded-2xl border bg-white shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-slate-50/60">
-                    <TableHead className="px-4 py-3 text-slate-600 text-xs font-medium whitespace-nowrap sticky left-0 bg-slate-50 z-10">
-                      Row
-                    </TableHead>
-                    {visibleColumns.map((column, index) => (
-                      <TableHead 
-                        key={column} 
-                        className={`px-4 py-3 text-slate-600 text-xs font-medium whitespace-nowrap min-w-[120px] ${
-                          index === 0 ? 'sticky left-12 bg-slate-50 z-10' : ''
-                        }`}
-                        title={column}
-                      >
-                        {getColumnDisplayName(column)}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((loan, rowIndex) => {
-                    const allData = getAllLoanData(loan);
-                    return (
-                      <TableRow
-                        key={loan.id || loan.loanNumber}
-                        className="border-b hover:bg-slate-50 transition-colors"
-                      >
-                        <TableCell className="px-4 py-3 text-xs text-slate-500 sticky left-0 bg-white z-5">
-                          {rowIndex + 1}
-                        </TableCell>
-                        {visibleColumns.map((column, colIndex) => (
-                          <TableCell 
-                            key={`${loan.id}-${column}`} 
-                            className={`px-4 py-3 text-xs text-slate-700 whitespace-nowrap min-w-[120px] ${
-                              colIndex === 0 ? 'sticky left-12 bg-white z-5' : ''
-                            }`}
-                            title={allData[column] != null ? String(allData[column]) : ''}
-                          >
-                            {colIndex === 0 ? (
-                              <button
-                                onClick={() => navigateToLoanDetail(loan)}
-                                className="text-blue-600 hover:text-blue-800 hover:underline text-left w-full text-start"
-                              >
-                                {formatCellValue(loan, column)}
-                              </button>
-                            ) : (
-                              formatCellValue(loan, column)
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    );
-                  })}
-
-                  {filtered.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={visibleColumns.length + 1} 
-                        className="px-4 lg:px-6 py-12 text-center text-slate-500 text-sm">
-                        {rows.length === 0 ? (
-                          <div>
-                            No loans found.{" "}
-                            <button
-                              onClick={navigateToImport}
-                              className="text-blue-600 hover:text-blue-800 underline"
-                            >
-                              Import your first data file
-                            </button>
-                          </div>
-                        ) : (
-                          "No loans match your search. Try a different search term."
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-
           {/* Summary Footer */}
           <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-slate-500">
             <div>
@@ -760,6 +778,7 @@ const navigateToLoanDetail = (loan) => {
               </button>
             </div>
           </div>
+          
         </div>
       </div>
 
