@@ -153,31 +153,76 @@ export default function LoansPage() {
   }, [q, rows, selectedProperties]);
 
   // Summary KPIs
-  const kpis = useMemo(() => {
-    const totalLoans = rows.length;
-    
-    let total = 0;
-    rows.forEach(r => {
-      const balance = r.principalBalance;
-      if (balance != null) {
-        const num = Number(balance);
-        if (!isNaN(num)) total += num;
-      }
+// Summary KPIs - FIXED number conversion
+
+// Format large numbers with B/M/T suffixes
+const formatLargeNumber = (value) => {
+  if (typeof value !== 'number' || isNaN(value)) return value;
+  
+  const absValue = Math.abs(value);
+  
+  if (absValue >= 1e9) {
+    return (value / 1e9).toFixed(2) + 'B';
+  } else {
+    // Show regular number with commas for smaller values
+    return value.toLocaleString('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     });
+  }
+};
+
+// In your KPI card, replace {kpis.total} with:
+
+const kpis = useMemo(() => {
+  const totalLoans = rows.length;
+  
+  let total = 0;
+  rows.forEach(r => {
+    const balance = r.principalBalance;
+    console.log('Raw balance:', balance);
     
-    let performing = 0, wl = 0, def = 0;
-    rows.forEach(r => {
-      const status = r.status;
-      if (status) {
-        const statusStr = String(status).toLowerCase();
-        if (statusStr.includes('perform')) performing++;
-        else if (statusStr.includes('watch')) wl++;
-        else if (statusStr.includes('default')) def++;
+    if (balance != null && balance !== '') {
+      // Handle different types of values
+      let num;
+      
+      if (typeof balance === 'string') {
+        // Remove $, commas, and any other non-numeric characters except decimal point
+        // This handles "$1,234,567.89", "1,234,567", etc.
+        const cleaned = balance.replace(/[^0-9.-]/g, '');
+        console.log('Cleaned string:', cleaned);
+        num = parseFloat(cleaned);
+      } else if (typeof balance === 'number') {
+        num = balance;
+      } else {
+        // Try to convert anything else
+        num = parseFloat(String(balance));
       }
-    });
-    
-    return { total, performing, wl, def, totalLoans };
-  }, [rows]);
+      
+      console.log('Converted number:', num);
+      
+      if (!isNaN(num)) {
+        total += num;
+        console.log('Running total:', total);
+      }
+    }
+  });
+  
+  console.log('Final total:', total);
+  
+  let performing = 0, wl = 0, def = 0;
+  rows.forEach(r => {
+    const status = r.status;
+    if (status) {
+      const statusStr = String(status).toLowerCase();
+      if (statusStr.includes('perform')) performing++;
+      else if (statusStr.includes('watch')) wl++;
+      else if (statusStr.includes('default')) def++;
+    }
+  });
+  
+  return { total, performing, wl, def, totalLoans };
+}, [rows]);
 
   // Navigation functions
   const navigateToImport = () => {
@@ -292,7 +337,7 @@ export default function LoansPage() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isPropertyFilterOpen]);
-
+  console.log(kpis)
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
@@ -345,7 +390,7 @@ export default function LoansPage() {
                 Total Balance
               </div>
               <div className="text-xl lg:text-2xl font-semibold truncate">
-                {kpis.total}
+              {formatLargeNumber(kpis.total)}
               </div>
               <div className="text-xs text-slate-500 mt-1">
                 {kpis.totalLoans} loans
