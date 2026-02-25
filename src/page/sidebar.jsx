@@ -641,297 +641,394 @@ const RightPanel = ({
   
           {/* UW Table */}
           <div className="grid-item">
-            <div className="card overflow-x-auto">
-              <table className="table uw-table">
-                <thead>
-                  <tr>
-                    <th>UW</th>
-                    <th>12/31/2022</th>
-                    <th>12/31/2023</th>
-                    <th>12/31/2024</th>
-                    <th>12/31/2025</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* EGI */}
-                  <tr>
-                    <td>EGI</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2022 EGI"] || 
-                      selectedLoanDetails?._rawData?.["2022_EGI"] ||
-                      selectedLoanDetails?._rawData?.["2022_egi"] ||
-                      selectedLoanDetails?._rawData?.egi_2022 ||
-                      selectedLoanDetails?._rawData?.egi || 
-                      null
-                    )}</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2023 EGI"] || 
-                      selectedLoanDetails?._rawData?.["2023_EGI"] ||
-                      selectedLoanDetails?._rawData?.["2023_egi"] ||
-                      selectedLoanDetails?._rawData?.egi_2023 ||
-                      null
-                    )}</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2024 EGI"] || 
-                      selectedLoanDetails?._rawData?.["2024_EGI"] ||
-                      selectedLoanDetails?._rawData?.["2024_egi"] ||
-                      selectedLoanDetails?._rawData?.egi_2024 ||
-                      null
-                    )}</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2025 EGI"] || 
-                      selectedLoanDetails?._rawData?.["2025_EGI"] ||
-                      selectedLoanDetails?._rawData?.["2025_egi"] ||
-                      selectedLoanDetails?._rawData?.egi_2025 ||
-                      null
-                    )}</td>
-                  </tr>
-                  
-                  {/* Expenses */}
-                  <tr>
-                    <td>Expenses</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2022 Expenses"] || 
-                      selectedLoanDetails?._rawData?.["2022_EXPENSES"] ||
-                      selectedLoanDetails?._rawData?.["2022_expenses"] ||
-                      selectedLoanDetails?._rawData?.expenses_2022 ||
-                      selectedLoanDetails?._rawData?.expenses || 
-                      null
-                    )}</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2023 Expenses"] || 
-                      selectedLoanDetails?._rawData?.["2023_EXPENSES"] ||
-                      selectedLoanDetails?._rawData?.["2023_expenses"] ||
-                      selectedLoanDetails?._rawData?.expenses_2023 ||
-                      null
-                    )}</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2024 Expenses"] || 
-                      selectedLoanDetails?._rawData?.["2024_EXPENSES"] ||
-                      selectedLoanDetails?._rawData?.["2024_expenses"] ||
-                      selectedLoanDetails?._rawData?.expenses_2024 ||
-                      null
-                    )}</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2025 Expenses"] || 
-                      selectedLoanDetails?._rawData?.["2025_EXPENSES"] ||
-                      selectedLoanDetails?._rawData?.["2025_expenses"] ||
-                      selectedLoanDetails?._rawData?.expenses_2025 ||
-                      null
-                    )}</td>
-                  </tr>
-                  
-                  {/* NOI */}
-                  <tr>
-                    <td>NOI</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2022 NOI"] || 
-                      selectedLoanDetails?._rawData?.["2022_NOI"] ||
-                      selectedLoanDetails?._rawData?.["2022_noi"] ||
-                      selectedLoanDetails?._rawData?.noi_2022 ||
-                      selectedLoanDetails?._rawData?.noi || 
-                      null
-                    )}</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2023 NOI"] || 
-                      selectedLoanDetails?._rawData?.["2023_NOI"] ||
-                      selectedLoanDetails?._rawData?.["2023_noi"] ||
-                      selectedLoanDetails?._rawData?.noi_2023 ||
-                      null
-                    )}</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2024 NOI"] || 
-                      selectedLoanDetails?._rawData?.["2024_NOI"] ||
-                      selectedLoanDetails?._rawData?.["2024_noi"] ||
-                      selectedLoanDetails?._rawData?.noi_2024 ||
-                      null
-                    )}</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2025 NOI"] || 
-                      selectedLoanDetails?._rawData?.["2025_NOI"] ||
-                      selectedLoanDetails?._rawData?.["2025_noi"] ||
-                      selectedLoanDetails?._rawData?.noi_2025 ||
-                      null
-                    )}</td>
-                  </tr>
-                  
-                  {/* Debt Service */}
-                  <tr>
-                    <td>Debt Service</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2022 Debt Service"] || 
-                      selectedLoanDetails?._rawData?.["2022_DEBT_SERVICE"] ||
-                      selectedLoanDetails?._rawData?.["2022_debt_service"] ||
-                      selectedLoanDetails?._rawData?.debt_service_2022 ||
-                      selectedLoanDetails?._rawData?.debt_service || 
-                      selectedLoanDetails?._rawData?.annual_debt_service ||
-                      null
-                    )}</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2023 Debt Service"] || 
-                      selectedLoanDetails?._rawData?.["2023_DEBT_SERVICE"] ||
-                      selectedLoanDetails?._rawData?.["2023_debt_service"] ||
-                      selectedLoanDetails?._rawData?.debt_service_2023 ||
-                      null
-                    )}</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2024 Debt Service"] || 
-                      selectedLoanDetails?._rawData?.["2024_DEBT_SERVICE"] ||
-                      selectedLoanDetails?._rawData?.["2024_debt_service"] ||
-                      selectedLoanDetails?._rawData?.debt_service_2024 ||
-                      null
-                    )}</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2025 Debt Service"] || 
-                      selectedLoanDetails?._rawData?.["2025_DEBT_SERVICE"] ||
-                      selectedLoanDetails?._rawData?.["2025_debt_service"] ||
-                      selectedLoanDetails?._rawData?.debt_service_2025 ||
-                      null
-                    )}</td>
-                  </tr>
-                  
-                  {/* NOI DSCR */}
-                  <tr>
-                    <td>NOI DSCR</td>
-                    <td>{formatRatio(
-                      selectedLoanDetails?._rawData?.["2022 DSCR"] || 
-                      selectedLoanDetails?._rawData?.["2022_DSCR"] ||
-                      selectedLoanDetails?._rawData?.["2022_dscr"] ||
-                      selectedLoanDetails?._rawData?.dscr_2022 ||
-                      selectedLoanDetails?._rawData?.dscr || 
-                      selectedLoanDetails?._rawData?.noi_dscr ||
-                      null
-                    )}</td>
-                    <td>{formatRatio(
-                      selectedLoanDetails?._rawData?.["2023 DSCR"] || 
-                      selectedLoanDetails?._rawData?.["2023_DSCR"] ||
-                      selectedLoanDetails?._rawData?.["2023_dscr"] ||
-                      selectedLoanDetails?._rawData?.dscr_2023 ||
-                      null
-                    )}</td>
-                    <td>{formatRatio(
-                      selectedLoanDetails?._rawData?.["2024 DSCR"] || 
-                      selectedLoanDetails?._rawData?.["2024_DSCR"] ||
-                      selectedLoanDetails?._rawData?.["2024_dscr"] ||
-                      selectedLoanDetails?._rawData?.dscr_2024 ||
-                      null
-                    )}</td>
-                    <td>{formatRatio(
-                      selectedLoanDetails?._rawData?.["2025 DSCR"] || 
-                      selectedLoanDetails?._rawData?.["2025_DSCR"] ||
-                      selectedLoanDetails?._rawData?.["2025_dscr"] ||
-                      selectedLoanDetails?._rawData?.dscr_2025 ||
-                      null
-                    )}</td>
-                  </tr>
-                  
-                  {/* NCF */}
-                  <tr>
-                    <td>NCF</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2022 NCF"] || 
-                      selectedLoanDetails?._rawData?.["2022_NCF"] ||
-                      selectedLoanDetails?._rawData?.["2022_ncf"] ||
-                      selectedLoanDetails?._rawData?.ncf_2022 ||
-                      selectedLoanDetails?._rawData?.ncf || 
-                      selectedLoanDetails?._rawData?.net_cash_flow ||
-                      null
-                    )}</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2023 NCF"] || 
-                      selectedLoanDetails?._rawData?.["2023_NCF"] ||
-                      selectedLoanDetails?._rawData?.["2023_ncf"] ||
-                      selectedLoanDetails?._rawData?.ncf_2023 ||
-                      null
-                    )}</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2024 NCF"] || 
-                      selectedLoanDetails?._rawData?.["2024_NCF"] ||
-                      selectedLoanDetails?._rawData?.["2024_ncf"] ||
-                      selectedLoanDetails?._rawData?.ncf_2024 ||
-                      null
-                    )}</td>
-                    <td>{formatCurrency(
-                      selectedLoanDetails?._rawData?.["2025 NCF"] || 
-                      selectedLoanDetails?._rawData?.["2025_NCF"] ||
-                      selectedLoanDetails?._rawData?.["2025_ncf"] ||
-                      selectedLoanDetails?._rawData?.ncf_2025 ||
-                      null
-                    )}</td>
-                  </tr>
-                  
-                  {/* NCF DSCR */}
-                  <tr>
-                    <td>NCF DSCR</td>
-                    <td>{formatRatio(
-                      selectedLoanDetails?._rawData?.["2022 NCF DSCR"] || 
-                      selectedLoanDetails?._rawData?.["2022_NCF_DSCR"] ||
-                      selectedLoanDetails?._rawData?.["2022_ncf_dscr"] ||
-                      selectedLoanDetails?._rawData?.ncf_dscr_2022 ||
-                      selectedLoanDetails?._rawData?.ncf_dscr || 
-                      selectedLoanDetails?._rawData?.net_cash_flow_dscr ||
-                      null
-                    )}</td>
-                    <td>{formatRatio(
-                      selectedLoanDetails?._rawData?.["2023 NCF DSCR"] || 
-                      selectedLoanDetails?._rawData?.["2023_NCF_DSCR"] ||
-                      selectedLoanDetails?._rawData?.["2023_ncf_dscr"] ||
-                      selectedLoanDetails?._rawData?.ncf_dscr_2023 ||
-                      null
-                    )}</td>
-                    <td>{formatRatio(
-                      selectedLoanDetails?._rawData?.["2024 NCF DSCR"] || 
-                      selectedLoanDetails?._rawData?.["2024_NCF_DSCR"] ||
-                      selectedLoanDetails?._rawData?.["2024_ncf_dscr"] ||
-                      selectedLoanDetails?._rawData?.ncf_dscr_2024 ||
-                      null
-                    )}</td>
-                    <td>{formatRatio(
-                      selectedLoanDetails?._rawData?.["2025 NCF DSCR"] || 
-                      selectedLoanDetails?._rawData?.["2025_NCF_DSCR"] ||
-                      selectedLoanDetails?._rawData?.["2025_ncf_dscr"] ||
-                      selectedLoanDetails?._rawData?.ncf_dscr_2025 ||
-                      null
-                    )}</td>
-                  </tr>
-                  
-                  {/* Debt Yield */}
-                  <tr>
-                    <td>Debt Yield</td>
-                    <td>{formatPercentage(
-                      selectedLoanDetails?._rawData?.["2022 Debt Yield"] || 
-                      selectedLoanDetails?._rawData?.["2022_DEBT_YIELD"] ||
-                      selectedLoanDetails?._rawData?.["2022_debt_yield"] ||
-                      selectedLoanDetails?._rawData?.debt_yield_2022 ||
-                      selectedLoanDetails?._rawData?.debt_yield || 
-                      null
-                    )}</td>
-                    <td>{formatPercentage(
-                      selectedLoanDetails?._rawData?.["2023 Debt Yield"] || 
-                      selectedLoanDetails?._rawData?.["2023_DEBT_YIELD"] ||
-                      selectedLoanDetails?._rawData?.["2023_debt_yield"] ||
-                      selectedLoanDetails?._rawData?.debt_yield_2023 ||
-                      null
-                    )}</td>
-                    <td>{formatPercentage(
-                      selectedLoanDetails?._rawData?.["2024 Debt Yield"] || 
-                      selectedLoanDetails?._rawData?.["2024_DEBT_YIELD"] ||
-                      selectedLoanDetails?._rawData?.["2024_debt_yield"] ||
-                      selectedLoanDetails?._rawData?.debt_yield_2024 ||
-                      null
-                    )}</td>
-                    <td>{formatPercentage(
-                      selectedLoanDetails?._rawData?.["2025 Debt Yield"] || 
-                      selectedLoanDetails?._rawData?.["2025_DEBT_YIELD"] ||
-                      selectedLoanDetails?._rawData?.["2025_debt_yield"] ||
-                      selectedLoanDetails?._rawData?.debt_yield_2025 ||
-                      null
-                    )}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+  <div className="card overflow-x-auto">
+    <table className="table uw-table">
+      <thead>
+        <tr>
+          <th>UW</th>
+          <th>12/31/2022</th>
+          <th>12/31/2023</th>
+          <th>12/31/2024</th>
+          <th>12/31/2025</th>
+        </tr>
+      </thead>
+      <tbody>
+        {/* EGI */}
+        <tr>
+          <td>EGI</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2022 EGI"] || 
+            selectedLoanDetails?._rawData?.["2022_EGI"] ||
+            selectedLoanDetails?._rawData?.["2022_egi"] ||
+            selectedLoanDetails?._rawData?.egi_2022 ||
+            selectedLoanDetails?._rawData?.egi || 
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2023 EGI"] || 
+            selectedLoanDetails?._rawData?.["2023_EGI"] ||
+            selectedLoanDetails?._rawData?.["2023_egi"] ||
+            selectedLoanDetails?._rawData?.egi_2023 ||
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2024 EGI"] || 
+            selectedLoanDetails?._rawData?.["2024_EGI"] ||
+            selectedLoanDetails?._rawData?.["2024_egi"] ||
+            selectedLoanDetails?._rawData?.egi_2024 ||
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2025 EGI"] || 
+            selectedLoanDetails?._rawData?.["2025_EGI"] ||
+            selectedLoanDetails?._rawData?.["2025_egi"] ||
+            selectedLoanDetails?._rawData?.egi_2025 ||
+            null
+          )}</td>
+        </tr>
+        
+        {/* Expenses */}
+        <tr>
+          <td>Expenses</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2022 Expenses"] || 
+            selectedLoanDetails?._rawData?.["2022_EXPENSES"] ||
+            selectedLoanDetails?._rawData?.["2022_expenses"] ||
+            selectedLoanDetails?._rawData?.expenses_2022 ||
+            selectedLoanDetails?._rawData?.expenses || 
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2023 Expenses"] || 
+            selectedLoanDetails?._rawData?.["2023_EXPENSES"] ||
+            selectedLoanDetails?._rawData?.["2023_expenses"] ||
+            selectedLoanDetails?._rawData?.expenses_2023 ||
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2024 Expenses"] || 
+            selectedLoanDetails?._rawData?.["2024_EXPENSES"] ||
+            selectedLoanDetails?._rawData?.["2024_expenses"] ||
+            selectedLoanDetails?._rawData?.expenses_2024 ||
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2025 Expenses"] || 
+            selectedLoanDetails?._rawData?.["2025_EXPENSES"] ||
+            selectedLoanDetails?._rawData?.["2025_expenses"] ||
+            selectedLoanDetails?._rawData?.expenses_2025 ||
+            null
+          )}</td>
+        </tr>
+        
+        {/* NOI */}
+        <tr>
+          <td>NOI</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2022 NOI"] || 
+            selectedLoanDetails?._rawData?.["2022_NOI"] ||
+            selectedLoanDetails?._rawData?.["2022_noi"] ||
+            selectedLoanDetails?._rawData?.noi_2022 ||
+            selectedLoanDetails?._rawData?.noi || 
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2023 NOI"] || 
+            selectedLoanDetails?._rawData?.["2023_NOI"] ||
+            selectedLoanDetails?._rawData?.["2023_noi"] ||
+            selectedLoanDetails?._rawData?.noi_2023 ||
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2024 NOI"] || 
+            selectedLoanDetails?._rawData?.["2024_NOI"] ||
+            selectedLoanDetails?._rawData?.["2024_noi"] ||
+            selectedLoanDetails?._rawData?.noi_2024 ||
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2025 NOI"] || 
+            selectedLoanDetails?._rawData?.["2025_NOI"] ||
+            selectedLoanDetails?._rawData?.["2025_noi"] ||
+            selectedLoanDetails?._rawData?.noi_2025 ||
+            null
+          )}</td>
+        </tr>
+        
+        {/* CapEx - NEW ROW */}
+        <tr>
+          <td>CapEx</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2022 CapEx"] || 
+            selectedLoanDetails?._rawData?.["2022_CAPEX"] ||
+            selectedLoanDetails?._rawData?.["2022_capex"] ||
+            selectedLoanDetails?._rawData?.capex_2022 ||
+            selectedLoanDetails?._rawData?.capex ||
+            selectedLoanDetails?._rawData?.["2022 Capital Expenditures"] ||
+            selectedLoanDetails?._rawData?.["2022_CAPITAL_EXPENDITURES"] ||
+            selectedLoanDetails?._rawData?.capital_expenditures_2022 ||
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2023 CapEx"] || 
+            selectedLoanDetails?._rawData?.["2023_CAPEX"] ||
+            selectedLoanDetails?._rawData?.["2023_capex"] ||
+            selectedLoanDetails?._rawData?.capex_2023 ||
+            selectedLoanDetails?._rawData?.["2023 Capital Expenditures"] ||
+            selectedLoanDetails?._rawData?.["2023_CAPITAL_EXPENDITURES"] ||
+            selectedLoanDetails?._rawData?.capital_expenditures_2023 ||
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2024 CapEx"] || 
+            selectedLoanDetails?._rawData?.["2024_CAPEX"] ||
+            selectedLoanDetails?._rawData?.["2024_capex"] ||
+            selectedLoanDetails?._rawData?.capex_2024 ||
+            selectedLoanDetails?._rawData?.["2024 Capital Expenditures"] ||
+            selectedLoanDetails?._rawData?.["2024_CAPITAL_EXPENDITURES"] ||
+            selectedLoanDetails?._rawData?.capital_expenditures_2024 ||
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2025 CapEx"] || 
+            selectedLoanDetails?._rawData?.["2025_CAPEX"] ||
+            selectedLoanDetails?._rawData?.["2025_capex"] ||
+            selectedLoanDetails?._rawData?.capex_2025 ||
+            selectedLoanDetails?._rawData?.["2025 Capital Expenditures"] ||
+            selectedLoanDetails?._rawData?.["2025_CAPITAL_EXPENDITURES"] ||
+            selectedLoanDetails?._rawData?.capital_expenditures_2025 ||
+            null
+          )}</td>
+        </tr>
+        
+        {/* Debt Service */}
+        <tr>
+          <td>Debt Service</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2022 Debt Service"] || 
+            selectedLoanDetails?._rawData?.["2022_DEBT_SERVICE"] ||
+            selectedLoanDetails?._rawData?.["2022_debt_service"] ||
+            selectedLoanDetails?._rawData?.debt_service_2022 ||
+            selectedLoanDetails?._rawData?.debt_service || 
+            selectedLoanDetails?._rawData?.annual_debt_service ||
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2023 Debt Service"] || 
+            selectedLoanDetails?._rawData?.["2023_DEBT_SERVICE"] ||
+            selectedLoanDetails?._rawData?.["2023_debt_service"] ||
+            selectedLoanDetails?._rawData?.debt_service_2023 ||
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2024 Debt Service"] || 
+            selectedLoanDetails?._rawData?.["2024_DEBT_SERVICE"] ||
+            selectedLoanDetails?._rawData?.["2024_debt_service"] ||
+            selectedLoanDetails?._rawData?.debt_service_2024 ||
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2025 Debt Service"] || 
+            selectedLoanDetails?._rawData?.["2025_DEBT_SERVICE"] ||
+            selectedLoanDetails?._rawData?.["2025_debt_service"] ||
+            selectedLoanDetails?._rawData?.debt_service_2025 ||
+            null
+          )}</td>
+        </tr>
+        
+        {/* NOI DSCR */}
+        <tr>
+          <td>NOI DSCR</td>
+          <td>{formatRatio(
+            selectedLoanDetails?._rawData?.["2022 DSCR"] || 
+            selectedLoanDetails?._rawData?.["2022_DSCR"] ||
+            selectedLoanDetails?._rawData?.["2022_dscr"] ||
+            selectedLoanDetails?._rawData?.["2022_noi_dscr"] ||
+            selectedLoanDetails?._rawData?.dscr_2022 ||
+            selectedLoanDetails?._rawData?.dscr || 
+            selectedLoanDetails?._rawData?.noi_dscr ||
+            null
+          )}</td>
+          <td>{formatRatio(
+            selectedLoanDetails?._rawData?.["2023 DSCR"] || 
+            selectedLoanDetails?._rawData?.["2023_DSCR"] ||
+            selectedLoanDetails?._rawData?.["2023_dscr"] ||
+            selectedLoanDetails?._rawData?.["2023_noi_dscr"] ||
+            selectedLoanDetails?._rawData?.dscr_2023 ||
+            null
+          )}</td>
+          <td>{formatRatio(
+            selectedLoanDetails?._rawData?.["2024 DSCR"] || 
+            selectedLoanDetails?._rawData?.["2024_DSCR"] ||
+            selectedLoanDetails?._rawData?.["2024_dscr"] ||
+            selectedLoanDetails?._rawData?.["2024_noi_dscr"] ||
+            selectedLoanDetails?._rawData?.dscr_2024 ||
+            null
+          )}</td>
+          <td>{formatRatio(
+            selectedLoanDetails?._rawData?.["2025 DSCR"] || 
+            selectedLoanDetails?._rawData?.["2025_DSCR"] ||
+            selectedLoanDetails?._rawData?.["2025_dscr"] ||
+            selectedLoanDetails?._rawData?.["2025_noi_dscr"] ||
+            selectedLoanDetails?._rawData?.dscr_2025 ||
+            null
+          )}</td>
+        </tr>
+        
+        {/* NCF */}
+        <tr>
+          <td>NCF</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2022 NCF"] || 
+            selectedLoanDetails?._rawData?.["2022_NCF"] ||
+            selectedLoanDetails?._rawData?.["2022_ncf"] ||
+            selectedLoanDetails?._rawData?.ncf_2022 ||
+            selectedLoanDetails?._rawData?.ncf || 
+            selectedLoanDetails?._rawData?.net_cash_flow ||
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2023 NCF"] || 
+            selectedLoanDetails?._rawData?.["2023_NCF"] ||
+            selectedLoanDetails?._rawData?.["2023_ncf"] ||
+            selectedLoanDetails?._rawData?.ncf_2023 ||
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2024 NCF"] || 
+            selectedLoanDetails?._rawData?.["2024_NCF"] ||
+            selectedLoanDetails?._rawData?.["2024_ncf"] ||
+            selectedLoanDetails?._rawData?.ncf_2024 ||
+            null
+          )}</td>
+          <td>{formatCurrency(
+            selectedLoanDetails?._rawData?.["2025 NCF"] || 
+            selectedLoanDetails?._rawData?.["2025_NCF"] ||
+            selectedLoanDetails?._rawData?.["2025_ncf"] ||
+            selectedLoanDetails?._rawData?.ncf_2025 ||
+            null
+          )}</td>
+        </tr>
+        
+        {/* NCF DSCR */}
+        <tr>
+          <td>NCF DSCR</td>
+          <td>{formatRatio(
+            selectedLoanDetails?._rawData?.["2022 NCF DSCR"] || 
+            selectedLoanDetails?._rawData?.["2022_NCF_DSCR"] ||
+            selectedLoanDetails?._rawData?.["2022_ncf_dscr"] ||
+            selectedLoanDetails?._rawData?.ncf_dscr_2022 ||
+            selectedLoanDetails?._rawData?.ncf_dscr || 
+            selectedLoanDetails?._rawData?.net_cash_flow_dscr ||
+            null
+          )}</td>
+          <td>{formatRatio(
+            selectedLoanDetails?._rawData?.["2023 NCF DSCR"] || 
+            selectedLoanDetails?._rawData?.["2023_NCF_DSCR"] ||
+            selectedLoanDetails?._rawData?.["2023_ncf_dscr"] ||
+            selectedLoanDetails?._rawData?.ncf_dscr_2023 ||
+            null
+          )}</td>
+          <td>{formatRatio(
+            selectedLoanDetails?._rawData?.["2024 NCF DSCR"] || 
+            selectedLoanDetails?._rawData?.["2024_NCF_DSCR"] ||
+            selectedLoanDetails?._rawData?.["2024_ncf_dscr"] ||
+            selectedLoanDetails?._rawData?.ncf_dscr_2024 ||
+            null
+          )}</td>
+          <td>{formatRatio(
+            selectedLoanDetails?._rawData?.["2025 NCF DSCR"] || 
+            selectedLoanDetails?._rawData?.["2025_NCF_DSCR"] ||
+            selectedLoanDetails?._rawData?.["2025_ncf_dscr"] ||
+            selectedLoanDetails?._rawData?.ncf_dscr_2025 ||
+            null
+          )}</td>
+        </tr>
+        
+        {/* Debt Yield */}
+        <tr>
+          <td>Debt Yield</td>
+          <td>{formatPercentage(
+            selectedLoanDetails?._rawData?.["2022 Debt Yield"] || 
+            selectedLoanDetails?._rawData?.["2022_DEBT_YIELD"] ||
+            selectedLoanDetails?._rawData?.["2022_debt_yield"] ||
+            selectedLoanDetails?._rawData?.debt_yield_2022 ||
+            selectedLoanDetails?._rawData?.debt_yield || 
+            null
+          )}</td>
+          <td>{formatPercentage(
+            selectedLoanDetails?._rawData?.["2023 Debt Yield"] || 
+            selectedLoanDetails?._rawData?.["2023_DEBT_YIELD"] ||
+            selectedLoanDetails?._rawData?.["2023_debt_yield"] ||
+            selectedLoanDetails?._rawData?.debt_yield_2023 ||
+            null
+          )}</td>
+          <td>{formatPercentage(
+            selectedLoanDetails?._rawData?.["2024 Debt Yield"] || 
+            selectedLoanDetails?._rawData?.["2024_DEBT_YIELD"] ||
+            selectedLoanDetails?._rawData?.["2024_debt_yield"] ||
+            selectedLoanDetails?._rawData?.debt_yield_2024 ||
+            null
+          )}</td>
+          <td>{formatPercentage(
+            selectedLoanDetails?._rawData?.["2025 Debt Yield"] || 
+            selectedLoanDetails?._rawData?.["2025_DEBT_YIELD"] ||
+            selectedLoanDetails?._rawData?.["2025_debt_yield"] ||
+            selectedLoanDetails?._rawData?.debt_yield_2025 ||
+            null
+          )}</td>
+        </tr>
+        
+        {/* Occupancy - NEW ROW */}
+        <tr>
+          <td>Occupancy</td>
+          <td>{formatPercentage(
+            selectedLoanDetails?._rawData?.["2022 Occupancy"] || 
+            selectedLoanDetails?._rawData?.["2022_OCCUPANCY"] ||
+            selectedLoanDetails?._rawData?.["2022_occupancy"] ||
+            selectedLoanDetails?._rawData?.occupancy_2022 ||
+            selectedLoanDetails?._rawData?.occupancy ||
+            selectedLoanDetails?._rawData?.["2022 Occupancy Rate"] ||
+            selectedLoanDetails?._rawData?.["2022_OCCUPANCY_RATE"] ||
+            selectedLoanDetails?._rawData?.occupancy_rate_2022 ||
+            selectedLoanDetails?._rawData?.occupancy_rate ||
+            null
+          )}</td>
+          <td>{formatPercentage(
+            selectedLoanDetails?._rawData?.["2023 Occupancy"] || 
+            selectedLoanDetails?._rawData?.["2023_OCCUPANCY"] ||
+            selectedLoanDetails?._rawData?.["2023_occupancy"] ||
+            selectedLoanDetails?._rawData?.occupancy_2023 ||
+            selectedLoanDetails?._rawData?.["2023 Occupancy Rate"] ||
+            selectedLoanDetails?._rawData?.["2023_OCCUPANCY_RATE"] ||
+            selectedLoanDetails?._rawData?.occupancy_rate_2023 ||
+            null
+          )}</td>
+          <td>{formatPercentage(
+            selectedLoanDetails?._rawData?.["2024 Occupancy"] || 
+            selectedLoanDetails?._rawData?.["2024_OCCUPANCY"] ||
+            selectedLoanDetails?._rawData?.["2024_occupancy"] ||
+            selectedLoanDetails?._rawData?.occupancy_2024 ||
+            selectedLoanDetails?._rawData?.["2024 Occupancy Rate"] ||
+            selectedLoanDetails?._rawData?.["2024_OCCUPANCY_RATE"] ||
+            selectedLoanDetails?._rawData?.occupancy_rate_2024 ||
+            null
+          )}</td>
+          <td>{formatPercentage(
+            selectedLoanDetails?._rawData?.["2025 Occupancy"] || 
+            selectedLoanDetails?._rawData?.["2025_OCCUPANCY"] ||
+            selectedLoanDetails?._rawData?.["2025_occupancy"] ||
+            selectedLoanDetails?._rawData?.occupancy_2025 ||
+            selectedLoanDetails?._rawData?.["2025 Occupancy Rate"] ||
+            selectedLoanDetails?._rawData?.["2025_OCCUPANCY_RATE"] ||
+            selectedLoanDetails?._rawData?.occupancy_rate_2025 ||
+            null
+          )}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
   
           {/* DSCR Card */}
           <div className="grid-item">
@@ -1082,24 +1179,25 @@ const RightPanel = ({
                 };
                 
                 if (latestInspection) {
+                  console.log(latestInspection)
                   const company = latestInspection["Company "] || latestInspection.company || "Not specified";
                   const dateValue = latestInspection["Date "] || latestInspection.date || latestInspection.inspectionDate;
                   const fileName = latestInspection.fileName || "Unknown file";
                   const inspectionType = latestInspection.inspectionType || latestInspection["Inspection Type"] || "General";
                   const propertyName = latestInspection.propertyName || selectedLoanDetails?.propertyName || "Unknown Property";
                   
-                  const grade = latestInspection.Grade || latestInspection.grade || 
+                  const grade = latestInspection.Grade || latestInspection.grade || latestInspection["Grade "] || latestInspection["Grade"] ||
                                latestInspection.Rating || latestInspection.rating || 
                                latestInspection.Score || latestInspection.score || "N/A";
                   
-                  const deferredMaintenance = latestInspection["Deferred Maintenance"] || 
+                  const deferredMaintenance = latestInspection["Deferred Maintenace "] || latestInspection["Deferred Maintenace"]
                                             latestInspection.deferredMaintenance || 
                                             latestInspection.DM || 
                                             latestInspection.dm || 
                                             latestInspection["DM Issues"] || 
                                             "Unknown";
                   
-                  const lifeSafety = latestInspection["Life Safety"] || 
+                  const lifeSafety = latestInspection["Life Safety"] ||latestInspection["Life Safety "] || 
                                     latestInspection.lifeSafety || 
                                     latestInspection.LS || 
                                     latestInspection.ls || 
