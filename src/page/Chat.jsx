@@ -15,8 +15,11 @@ const LeftPanel = ({ title = "Left Panel", backgroundColor = "#2d3748", children
   const navigate = useNavigate();
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('ai-chat');
+  const [isEditingSponsor, setIsEditingSponsor] = useState(false);
+  const [editedSponsorInfo, setEditedSponsorInfo] = useState('');
   const sidebarRef = useRef(null);
-
+  const textareaRef = useRef(null);
+  const sponsorContentRef = useRef(null);
 
   const handleLogout = async () => {
     try {
@@ -44,6 +47,21 @@ const LeftPanel = ({ title = "Left Panel", backgroundColor = "#2d3748", children
     };
   }, [isHistoryOpen]);
 
+  // Initialize editedSponsorInfo when selectedLoanDetails changes
+  useEffect(() => {
+    if (selectedLoanDetails?._rawData?.sponsor_information) {
+      setEditedSponsorInfo(selectedLoanDetails._rawData.sponsor_information);
+    }
+  }, [selectedLoanDetails]);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (isEditingSponsor && textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [isEditingSponsor, editedSponsorInfo]);
+
   const statusColors = {
     Performing: "#1dbf52",
     Watchlist: "#f5a623",
@@ -58,6 +76,22 @@ const LeftPanel = ({ title = "Left Panel", backgroundColor = "#2d3748", children
       .map(name => name.charAt(0).toUpperCase())
       .join('')
       .slice(0, 2);
+  };
+
+  const handleEditSponsor = () => {
+    setIsEditingSponsor(true);
+  };
+
+  const handleSaveSponsor = () => {
+    // Here you would typically save the edited content to your backend
+    // For now, we'll just exit edit mode
+    setIsEditingSponsor(false);
+  };
+
+  const handleCancelEdit = () => {
+    // Revert to original content
+    setEditedSponsorInfo(selectedLoanDetails?._rawData?.sponsor_information || '');
+    setIsEditingSponsor(false);
   };
 
   // Tabs configuration
@@ -164,18 +198,68 @@ const LeftPanel = ({ title = "Left Panel", backgroundColor = "#2d3748", children
         const sponsorInfo = selectedLoanDetails?._rawData?.sponsor_information;
         
         return (
-          <div className="flex-1 flex flex-col items-center px-4 py-8">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">{selectedLoanDetails?._rawData?.sponsor_name}</h2>
-            
-            {sponsorInfo ? (
-              <div className="w-full max-w-[980px] bg-white rounded-2xl border border-gray-200 p-6">
-              {selectedLoanDetails?._rawData?.sponsor_information}
+          <div className="flex-1 flex flex-col items-center px-4 py-8 h-full">
+            <div className="w-full max-w-[980px] flex flex-col h-full">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold text-gray-800">
+                  {selectedLoanDetails?._rawData?.sponsor_name}
+                </h2>
+                {sponsorInfo && !isEditingSponsor && (
+                  <button
+                    onClick={handleEditSponsor}
+                    className="px-4 py-2 text-sm font-medium text-white bg-[#2f8f6b] rounded-md hover:bg-[#247a56] transition"
+                  >
+                    Edit
+                  </button>
+                )}
               </div>
-            ) : (
-              <div className="w-full max-w-[980px] bg-white rounded-2xl border border-gray-200 p-8 text-center text-gray-500">
-                No sponsor information available
-              </div>
-            )}
+              
+              {sponsorInfo ? (
+                <div className="bg-white rounded-2xl border border-gray-200 p-6 flex-1 flex flex-col min-h-0">
+                  {isEditingSponsor ? (
+                    <div className="space-y-4 flex flex-col h-full">
+                      <textarea
+                        ref={textareaRef}
+                        value={editedSponsorInfo}
+                        onChange={(e) => setEditedSponsorInfo(e.target.value)}
+                        className="w-full flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f8f6b] focus:border-transparent resize-none font-inherit min-h-[200px]"
+                        style={{ lineHeight: '1.5' }}
+                      />
+                      <div className="flex justify-end gap-2 flex-shrink-0">
+                        <button
+                          onClick={handleCancelEdit}
+                          className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSaveSponsor}
+                          className="px-4 py-2 text-sm font-medium text-white bg-[#2f8f6b] rounded-md hover:bg-[#247a56] transition"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div 
+                      ref={sponsorContentRef}
+                      className="overflow-y-auto pr-2 custom-scrollbar"
+                      style={{ maxHeight: '400px' }}
+                    >
+                      {editedSponsorInfo.split('\n').map((paragraph, index) => (
+                        <p key={index} className="text-gray-700 leading-relaxed mb-4 last:mb-0">
+                          {paragraph || '\u00A0'}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="w-full bg-white rounded-2xl border border-gray-200 p-8 text-center text-gray-500">
+                  No sponsor information available
+                </div>
+              )}
+            </div>
           </div>
         );
 
@@ -239,9 +323,9 @@ const LeftPanel = ({ title = "Left Panel", backgroundColor = "#2d3748", children
       </header>
 
       <main className="pp-main">
-        <div className="min-h-screen flex flex-col relative mt-10" >
+        <div className="h-screen flex flex-col relative mt-10" style={{ height: 'calc(100vh - 80px)' }}>
           {/* Top Bar with Chat History and Tabs */}
-          <div className="flex items-center justify-between px-8 pt-6 border-b border-gray-200">
+          <div className="flex items-center justify-between px-8  border-b border-gray-200 flex-shrink-0">
             {/* Tabs */}
             <div className="flex space-x-1">
               {tabs.map((tab) => (
@@ -304,12 +388,14 @@ const LeftPanel = ({ title = "Left Panel", backgroundColor = "#2d3748", children
             </>
           )}
 
-          {/* Tab Content */}
-          {renderTabContent()}
+          {/* Tab Content - Scrollable area */}
+          <div className="flex-1 overflow-y-auto">
+            {renderTabContent()}
+          </div>
 
           {/* Bottom Input - Only show for AI Chat tab */}
           {activeTab === 'ai-chat' && (
-            <div className="w-full flex justify-center px-4 pb-10 mb-5">
+            <div className="w-full flex justify-center px-4 pb-10 mt-3 flex-shrink-0">
               <div className="w-full max-w-[980px]">
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                   <div className="px-6 py-4">
