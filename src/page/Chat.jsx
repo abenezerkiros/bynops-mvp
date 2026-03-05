@@ -111,7 +111,7 @@ const LeftPanel = ({ title = "Left Panel", backgroundColor = "#2d3748", children
         return (
           <div className="flex-1 flex flex-col items-center text-center px-4">
             {/* Heading */}
-            <h1 className="text-[36px] font-semibold text-[#2f8f6b] mt-3">
+            <h1 className="text-[36px] font-semibold text-[#2f8f6b] ">
               What can I help you with today?
             </h1>
 
