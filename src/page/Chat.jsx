@@ -247,7 +247,7 @@ const LeftPanel = ({ title = "Left Panel", backgroundColor = "#2d3748", children
                       style={{ maxHeight: '400px' }}
                     >
                       {editedSponsorInfo.split('\n').map((paragraph, index) => (
-                        <p key={index} className="text-gray-700 leading-relaxed mb-4 last:mb-0">
+                        <p key={index} className="text-gray-700 leading-relaxed mb-4 text-lg last:mb-0">
                           {paragraph || '\u00A0'}
                         </p>
                       ))}

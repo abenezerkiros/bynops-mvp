@@ -490,28 +490,7 @@ const RightPanel = ({
                         </span>
                       </div>
                       {/* Add Sponsor Name Row with Hover Card */}
-                      <div className="loan-info-row sponsor-row">
-                        <span className="info-label">Sponsor:</span>
-                        <span 
-                          ref={sponsorNameRef}
-                          className="info-value sponsor-name"
-                          onMouseEnter={() => setShowSponsorCard(true)}
-                          onMouseLeave={() => {
-                            setTimeout(() => {
-                              if (!sponsorCardRef.current?.matches(':hover')) {
-                                setShowSponsorCard(false);
-                              }
-                            }, 100);
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowSponsorCard(!showSponsorCard);
-                          }}
-                        >
-                          {sponsorName}
-                          <span style={{ marginLeft: '4px', fontSize: '12px' }}>ⓘ</span>
-                        </span>
-                      </div>
+                      
                     </div>
                   )}
                 </div>
@@ -520,22 +499,7 @@ const RightPanel = ({
           )}
   
           {/* Sponsor Information Card (Floating) */}
-          {showSponsorCard && (
-            <div 
-              ref={sponsorCardRef}
-              className="sponsor-card"
-              onMouseEnter={() => setShowSponsorCard(true)}
-              onMouseLeave={() => setShowSponsorCard(false)}
-            >
-              <div className="sponsor-card-header">
-                <h3>Sponsor: {sponsorName}</h3>
-              </div>
-              
-              <div className="sponsor-card-content">
-                {sponsorInformation}
-              </div>
-            </div>
-          )}
+    
   
           {/* Hidden file input */}
           <input
